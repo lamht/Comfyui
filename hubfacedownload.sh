@@ -1,57 +1,72 @@
+#!/bin/bash
+
+set -e
+
 # ==============================
 # SET TOKEN
 # ==============================
-# export HF_TOKEN=hf_your_new_token_here
+# export HF_TOKEN=hf_your_token_here
 
 # ==============================
-# Download hubface cli
+# INSTALL HF CLI (hf)
 # ==============================
-pip install -U huggingface_hub
+curl -LsSf https://hf.co/cli/install.sh | bash
 
+# đảm bảo PATH có hf
+export PATH="/root/.local/bin:$PATH"
+
+# tăng tốc download
 export HF_HUB_ENABLE_HF_TRANSFER=1 
+
 # ==============================
-# LOGIN (read from ENV)
+# LOGIN
 # ==============================
-huggingface-cli login --token $HF_TOKEN
+if [ -n "$HF_TOKEN" ]; then
+  hf auth login --token "$HF_TOKEN"
+else
+  echo "[WARN] No HF_TOKEN provided, downloading public models only"
+fi
 
 # ==============================
 # BASE PATH
 # ==============================
 BASE=ComfyUI/models
 
+mkdir -p $BASE/{loras,checkpoints,clip,vae}
+
 # ==============================
 # DOWNLOAD LORA
 # ==============================
-huggingface-cli download BuckyDroid/test_lora \
-  --include "scg-anatomy-female-v2.safetensors" \
+hf download BuckyDroid/test_lora \
+  scg-anatomy-female-v2.safetensors \
   --local-dir $BASE/loras
 
 # ==============================
 # DOWNLOAD LORA (FACE SWAP)
 # ==============================
-huggingface-cli download Alissonerdx/BFS-Best-Face-Swap \
-  --include "bfs_head_v1_flux-klein_9b_step3500_rank128.safetensors" \
+hf download Alissonerdx/BFS-Best-Face-Swap \
+  bfs_head_v1_flux-klein_9b_step3500_rank128.safetensors \
   --local-dir $BASE/loras
 
 # ==============================
 # DOWNLOAD CHECKPOINT
 # ==============================
-huggingface-cli download black-forest-labs/FLUX.2-klein-9B \
-  --include "flux-2-klein-9b.safetensors" \
+hf download black-forest-labs/FLUX.2-klein-9B \
+  flux-2-klein-9b.safetensors \
   --local-dir $BASE/checkpoints
 
 # ==============================
 # DOWNLOAD CLIP
 # ==============================
-huggingface-cli download Comfy-Org/vae-text-encorder-for-flux-klein-9b \
-  --include "split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors" \
+hf download Comfy-Org/vae-text-encorder-for-flux-klein-9b \
+  split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors \
   --local-dir $BASE/clip
 
 # ==============================
 # DOWNLOAD VAE
 # ==============================
-huggingface-cli download Comfy-Org/vae-text-encorder-for-flux-klein-9b \
-  --include "split_files/vae/flux2-vae.safetensors" \
+hf download Comfy-Org/vae-text-encorder-for-flux-klein-9b \
+  split_files/vae/flux2-vae.safetensors \
   --local-dir $BASE/vae
 
-echo "Download complete!"
+echo "✅ Download complete!"
