@@ -6,7 +6,7 @@
 # ==============================
 # Download hubface cli
 # ==============================
-curl -LsSf https://hf.co/cli/install.sh | bash
+pip install -U huggingface_hub
 
 export HF_HUB_ENABLE_HF_TRANSFER=1 
 # ==============================
