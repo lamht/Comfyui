@@ -25,3 +25,6 @@ for dir in "$COMFY_PATH"/custom_nodes/*; do
     pip install -r "$dir/requirements.txt" --upgrade --no-cache-dir
   fi
 done
+
+cd ComfyUI
+python3 main.py --listen 0.0.0.0 --port 8188

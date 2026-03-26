@@ -38,7 +38,7 @@ huggingface-cli download Alissonerdx/BFS-Best-Face-Swap ^
 :: ==============================
 huggingface-cli download black-forest-labs/FLUX.2-klein-9B ^
   --include flux-2-klein-9b.safetensors ^
-  --local-dir %BASE%\checkpoints
+  --local-dir %BASE%\diffusion_models
 
 :: ==============================
 :: DOWNLOAD CLIP
