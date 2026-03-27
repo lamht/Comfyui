@@ -29,7 +29,7 @@ for dir in "$COMFY_PATH"/custom_nodes/*; do
 done
 
 pip uninstall torch torchvision torchaudio -y
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 
 cd ComfyUI
-python3 main.py --listen 0.0.0.0 --port 8188
+python3 main.py --listen 0.0.0.0 --port 8188 &
