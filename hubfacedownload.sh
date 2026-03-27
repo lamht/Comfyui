@@ -48,6 +48,20 @@ hf download Alissonerdx/BFS-Best-Face-Swap \
   bfs_head_v1_flux-klein_9b_step3500_rank128.safetensors \
   --local-dir $BASE/loras
 
+hf download ali-vilab/ACE_Plus \
+portrait/comfyui_portrait_lora64.safetensors \
+--local-dir $BASE/loras
+mv $BASE/loras/portrait/comfyui_portrait_lora64.safetensors $BASE/loras/comfyui_portrait_lora64.safetensors
+
+hf download ali-vilab/ACE_Plus \
+subject/comfyui_subject_lora16.safetensors \
+--local-dir $BASE/loras
+mv $BASE/loras/subject/comfyui_subject_lora16.safetensors $BASE/loras/comfyui_subject_lora16.safetensors
+
+hf download fal/FLUX.2-dev-Turbo \
+flux.2-turbo-lora.safetensors \
+--local-dir $BASE/loras
+
 # ==============================
 # DOWNLOAD CHECKPOINT
 # ==============================
@@ -61,6 +75,7 @@ hf download black-forest-labs/FLUX.2-klein-9B \
 hf download Comfy-Org/vae-text-encorder-for-flux-klein-9b \
   split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors \
   --local-dir $BASE/clip
+mv $BASE/clip/split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors $BASE/clip/qwen_3_8b_fp8mixed.safetensors
 
 # ==============================
 # DOWNLOAD VAE
@@ -68,5 +83,6 @@ hf download Comfy-Org/vae-text-encorder-for-flux-klein-9b \
 hf download Comfy-Org/vae-text-encorder-for-flux-klein-9b \
   split_files/vae/flux2-vae.safetensors \
   --local-dir $BASE/vae
+mv $BASE/vae/split_files/vae/flux2-vae.safetensors $BASE/vae/flux2-vae.safetensors
 
 echo "✅ Download complete!"
