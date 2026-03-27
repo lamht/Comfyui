@@ -58,6 +58,11 @@ subject/comfyui_subject_lora16.safetensors \
 --local-dir $BASE/loras
 mv $BASE/loras/subject/comfyui_subject_lora16.safetensors $BASE/loras/comfyui_subject_lora16.safetensors
 
+#https://huggingface.co/dx8152/Flux2-Klein-9B-Consistency/blob/main/Klein-consistency.safetensors
+hf download dx8152/Flux2-Klein-9B-Consistency \
+  Klein-consistency.safetensors \
+  --local-dir $BASE/loras
+
 hf download fal/FLUX.2-dev-Turbo \
 flux.2-turbo-lora.safetensors \
 --local-dir $BASE/loras
