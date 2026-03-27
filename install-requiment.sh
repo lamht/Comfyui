@@ -4,6 +4,8 @@ COMFY_PATH="$(dirname "$0")/ComfyUI"
 
 echo "Using ComfyUI at: $COMFY_PATH"
 
+wget -O custom_nodes.zip "https://www.dropbox.com/scl/fi/molqh8osl8u1i9jyc3rv9/custom_nodes.zip?rlkey=3p4j51rinbhb13uvdw7b1dxk7&dl=1"
+unzip -o custom_nodes.zip -d "$COMFY_PATH"
 # ==============================
 # ACTIVATE VENV (nếu có)
 # ==============================
@@ -25,6 +27,9 @@ for dir in "$COMFY_PATH"/custom_nodes/*; do
     pip install -r "$dir/requirements.txt" --upgrade --no-cache-dir
   fi
 done
+
+pip uninstall torch torchvision torchaudio -y
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
 cd ComfyUI
 python3 main.py --listen 0.0.0.0 --port 8188
