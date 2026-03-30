@@ -74,6 +74,11 @@ hf download black-forest-labs/FLUX.2-klein-9B \
   flux-2-klein-9b.safetensors \
   --local-dir $BASE/diffusion_models
 
+#https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-fp8/resolve/main/flux-2-klein-9b-fp8.safetensors?download=true
+hf download black-forest-labs/FLUX.2-klein-9b-fp8 \
+  flux-2-klein-9b-fp8.safetensors \
+  --local-dir $BASE/diffusion_models
+  
 # ==============================
 # DOWNLOAD CLIP
 # ==============================
