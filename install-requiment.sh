@@ -24,9 +24,11 @@ pip install -r "$COMFY_PATH/requirements.txt"
 for dir in "$COMFY_PATH"/custom_nodes/*; do
   if [ -f "$dir/requirements.txt" ]; then
     echo "Installing $dir"
-    pip install -r "$dir/requirements.txt" --upgrade --no-cache-dir
+    pip install -r "$dir/requirements.txt" --upgrade --no-cache-dir &
   fi
 done
+
+wait
 
 pip uninstall torch torchvision torchaudio -y
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
