@@ -37,9 +37,16 @@ mkdir -p $BASE/{loras,checkpoints,clip,vae}
 # ==============================
 # DOWNLOAD LORA
 # ==============================
-hf download BuckyDroid/test_lora \
+#https://huggingface.co/Aitrepreneur/FLX/blob/main/scg-anatomy-female-v2.safetensors
+hf download Aitrepreneur/FLX \
   scg-anatomy-female-v2.safetensors \
   --local-dir $BASE/loras
+
+#https://huggingface.co/uriel353/flux-female-anatomy/resolve/main/flux-female-anatomy.safetensors?download=true
+hf download uriel353/flux-female-anatomy \
+  flux-female-anatomy.safetensors \
+  --local-dir $BASE/loras
+# v4g1n4, n4k3d
 
 # ==============================
 # DOWNLOAD LORA (FACE SWAP)
@@ -78,6 +85,11 @@ hf download black-forest-labs/FLUX.2-klein-9B \
 hf download black-forest-labs/FLUX.2-klein-9b-fp8 \
   flux-2-klein-9b-fp8.safetensors \
   --local-dir $BASE/diffusion_models
+
+#https://huggingface.co/jackzheng/flux-fill-FP8/blob/main/fluxFillFP8_v10.safetensors
+hf download jackzheng/flux-fill-FP8 \
+  fluxFillFP8_v10.safetensors \
+  --local-dir $BASE/diffusion_models
   
 # ==============================
 # DOWNLOAD CLIP
@@ -87,6 +99,16 @@ hf download Comfy-Org/vae-text-encorder-for-flux-klein-9b \
   --local-dir $BASE/clip
 mv $BASE/clip/split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors $BASE/clip/qwen_3_8b_fp8mixed.safetensors
 
+#https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors?download=true
+hf download comfyanonymous/flux_text_encoders \
+  clip_l.safetensors \
+  --local-dir $BASE/clip
+
+#https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors?download=true
+hf download comfyanonymous/flux_text_encoders \
+  t5xxl_fp16.safetensors \
+  --local-dir $BASE/clip
+  
 # ==============================
 # DOWNLOAD VAE
 # ==============================
@@ -94,5 +116,10 @@ hf download Comfy-Org/vae-text-encorder-for-flux-klein-9b \
   split_files/vae/flux2-vae.safetensors \
   --local-dir $BASE/vae
 mv $BASE/vae/split_files/vae/flux2-vae.safetensors $BASE/vae/flux2-vae.safetensors
+
+#https://huggingface.co/lovis93/testllm/resolve/ed9cf1af7465cebca4649157f118e331cf2a084f/ae.safetensors?download=true
+hf download lovis93/testllm \
+  ae.safetensors \
+  --local-dir $BASE/vae
 
 echo "✅ Download complete!"
