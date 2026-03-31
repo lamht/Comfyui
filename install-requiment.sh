@@ -37,4 +37,4 @@ cd ComfyUI
 apt update
 apt install iproute2 -y
 kill -9 $(ss -tulnp | grep 8888 | grep -oP 'pid=\K\d+')
-python3 main.py --listen 0.0.0.0 --port 8888 &
+python3 main.py --listen 0.0.0.0 --port 8188 &
