@@ -34,4 +34,5 @@ pip uninstall torch torchvision torchaudio -y
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 
 cd ComfyUI
+kill -9 $(ss -tulnp | grep 8888 | grep -oP 'pid=\K\d+')
 nohup python3 main.py --listen 0.0.0.0 --port 8888 &
