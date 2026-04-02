@@ -86,9 +86,9 @@ hf download black-forest-labs/FLUX.2-klein-9b-fp8 \
   flux-2-klein-9b-fp8.safetensors \
   --local-dir $BASE/diffusion_models
 
-#https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-fp8/resolve/main/flux-2-klein-9b-fp8.safetensors?download=true
-hf download black-forest-labs/FLUX.2-klein-9b-fp8 \
-  flux-2-klein-9b-fp8.safetensors \
+#https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-kv-fp8/resolve/main/flux-2-klein-9b-kv-fp8.safetensors?download=true
+hf download black-forest-labs/FLUX.2-klein-9b-kv-fp8 \
+  flux-2-klein-9b-kv-fp8.safetensors \
   --local-dir $BASE/diffusion_models
 
 #https://huggingface.co/jackzheng/flux-fill-FP8/blob/main/fluxFillFP8_v10.safetensors
