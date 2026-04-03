@@ -30,7 +30,7 @@ fi
 # ==============================
 # BASE PATH
 # ==============================
-BASE=ComfyUI/models
+export BASE="$(dirname "$0")/ComfyUI/models"
 
 mkdir -p $BASE/{loras,checkpoints,clip,vae}
 
@@ -132,5 +132,11 @@ mv $BASE/vae/split_files/vae/flux2-vae.safetensors $BASE/vae/flux2-vae.safetenso
 # hf download lovis93/testllm \
 #   ae.safetensors \
 #   --local-dir $BASE/vae
+
+# ==============================
+# DOWNLOAD ADDITIONAL MODELS
+# ==============================
+# https://www.dropbox.com/scl/fi/pws3t2zqx6597fuy2darh/pusfix-klein.safetensors?rlkey=3fooobe4nawbn3ttisl50zt9n&st=oj9yimns&dl=0
+wget -O $BASE/loras/pusfix-klein.safetensors "https://www.dropbox.com/scl/fi/pws3t2zqx6597fuy2darh/pusfix-klein.safetensors?rlkey=3fooobe4nawbn3ttisl50zt9n&st=oj9yimns&dl=1"
 
 echo "✅ Download complete!"
