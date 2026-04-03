@@ -70,6 +70,12 @@ hf download dx8152/Flux2-Klein-9B-Consistency \
   Klein-consistency.safetensors \
   --local-dir $BASE/loras
 
+#https://huggingface.co/gmp-dev/gmp-lora/blob/1786940ba90ccc3509970d1cb3541b2fccfd3de7/Lora/Likeness/realisticVaginasGod_sdVSGp1S.safetensors
+hf download gmp-dev/gmp-lora \
+  Lora/Likeness/realisticVaginasGod_sdVSGp1S.safetensors \
+  --local-dir $BASE/loras
+mv $BASE/loras/Lora/Likeness/realisticVaginasGod_sdVSGp1S.safetensors $BASE/loras/realisticVaginasGod_sdVSGp1S.safetensors
+
 hf download fal/FLUX.2-dev-Turbo \
 flux.2-turbo-lora.safetensors \
 --local-dir $BASE/loras
