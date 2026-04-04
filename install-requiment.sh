@@ -28,9 +28,12 @@ pip install -r all.txt
 wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && \
 sudo dpkg -i cloudflared-linux-amd64.deb &
 
+sudo apt update && sudo apt install -y nginx &
+
 pip uninstall torch torchvision torchaudio -y
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
 
+wait
 cd ComfyUI
 # apt update
 # apt install iproute2 -y
