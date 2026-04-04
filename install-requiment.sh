@@ -16,12 +16,10 @@ fi
 # ==============================
 # INSTALL CORE
 # ==============================
-pip install -r "$COMFY_PATH/requirements.txt"
+cat "$COMFY_PATH/requirements.txt" \
+    "$COMFY_PATH"/custom_nodes/*/requirements.txt \
+    | sort -u > all.txt
 
-# ==============================
-# INSTALL CUSTOM NODES
-# ==============================
-cat "$COMFY_PATH"/custom_nodes/*/requirements.txt > all.txt
 pip install -r all.txt
 
 #INSTALL couldfare tunnel CLI
