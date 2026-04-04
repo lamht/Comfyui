@@ -37,5 +37,9 @@ cd ComfyUI
 # apt install iproute2 -y
 # kill -9 $(ss -tulnp | grep 8888 | grep -oP 'pid=\K\d+')
 nohup python3 main.py --listen 0.0.0.0 --port 8188 &
+cp nginx.conf /etc/nginx/nginx.conf
+sudo nginx -t
+sudo systemctl restart nginx
+
 nohup cloudflared tunnel --url http://localhost:8080 --region apac
 cat nohup.out
