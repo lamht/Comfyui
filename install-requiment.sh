@@ -1,6 +1,6 @@
 # SET COMFYUI path
 # ==============================
-export COMFY_PATH="$(dirname "$0")/ComfyUI"
+export COMFY_PATH="$(dirname "$0")/ComfyUI" >> ~/.bashrc
 
 echo "Using ComfyUI at: $COMFY_PATH"
 
