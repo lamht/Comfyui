@@ -1,6 +1,7 @@
 # SET COMFYUI path
 # ==============================
-export COMFY_PATH="$(dirname "$0")/ComfyUI" >> ~/.bashrc
+echo 'export COMFY_PATH="$(dirname "$0")/ComfyUI"' >> ~/.bashrc
+export COMFY_PATH="$(dirname "$0")/ComfyUI"
 
 echo "Using ComfyUI at: $COMFY_PATH"
 
@@ -24,7 +25,7 @@ pip install -r all.txt --prefer-binary --no-cache-dir &
 
 #INSTALL couldfare tunnel CLI
 wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && \
-sudo dpkg -i cloudflared-linux-amd64.deb &
+sudo dpkg -i cloudflared-linux-amd64.deb
 
 sudo apt update && sudo apt install -y nginx &
 
