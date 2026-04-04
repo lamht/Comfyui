@@ -25,9 +25,8 @@ cat "$COMFY_PATH"/custom_nodes/*/requirements.txt > all.txt
 pip install -r all.txt
 
 #INSTALL couldfare tunnel CLI
-wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb &
+wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && \
 sudo dpkg -i cloudflared-linux-amd64.deb &
-wait
 
 pip uninstall torch torchvision torchaudio -y
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
