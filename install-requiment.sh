@@ -21,12 +21,8 @@ pip install -r "$COMFY_PATH/requirements.txt"
 # ==============================
 # INSTALL CUSTOM NODES
 # ==============================
-for dir in "$COMFY_PATH"/custom_nodes/*; do
-  if [ -f "$dir/requirements.txt" ]; then
-    echo "Installing $dir"
-    pip install -r "$dir/requirements.txt" &
-  fi
-done
+cat "$COMFY_PATH"/custom_nodes/*/requirements.txt > all.txt
+pip install -r all.txt
 
 #INSTALL couldfare tunnel CLI
 wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb &
