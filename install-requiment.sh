@@ -1,6 +1,6 @@
 # SET COMFYUI path
 # ==============================
-COMFY_PATH="$(dirname "$0")/ComfyUI"
+export COMFY_PATH="$(dirname "$0")/ComfyUI"
 
 echo "Using ComfyUI at: $COMFY_PATH"
 
@@ -28,6 +28,9 @@ for dir in "$COMFY_PATH"/custom_nodes/*; do
   fi
 done
 
+#INSTALL couldfare tunnel CLI
+wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb &
+sudo dpkg -i cloudflared-linux-amd64.deb &
 wait
 
 pip uninstall torch torchvision torchaudio -y
@@ -38,3 +41,4 @@ cd ComfyUI
 # apt install iproute2 -y
 # kill -9 $(ss -tulnp | grep 8888 | grep -oP 'pid=\K\d+')
 nohup python3 main.py --listen 0.0.0.0 --port 8188 &
+nohup cloudflared tunnel --url http://localhost:8188 &
