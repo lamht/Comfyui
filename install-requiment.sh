@@ -73,5 +73,6 @@ sudo systemctl restart nginx
 # START TUNNEL
 # ==============================
 nohup cloudflared tunnel --url http://localhost:8080 --region apac > cf.log 2>&1 &
+grep -o 'https://.*trycloudflare.com' cf.log | tail -n 1
 
 echo "DONE"
