@@ -20,7 +20,7 @@ cat "$COMFY_PATH/requirements.txt" \
     "$COMFY_PATH"/custom_nodes/*/requirements.txt \
     | sort -u > all.txt
 
-pip install -r all.txt &
+pip install -r all.txt --prefer-binary --no-cache-dir &
 
 #INSTALL couldfare tunnel CLI
 wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && \
