@@ -12,8 +12,8 @@ echo "Using ComfyUI at: $COMFY_PATH"
 # ==============================
 # DOWNLOAD NODES
 # ==============================
-# wget -O custom_nodes.zip "https://www.dropbox.com/scl/fi/molqh8osl8u1i9jyc3rv9/custom_nodes.zip?dl=1"
-# unzip -o custom_nodes.zip -d "$COMFY_PATH"
+wget -O custom_nodes.zip "https://www.dropbox.com/scl/fi/ccabj5q3p8go0ht8fkwif/custom_nodes.zip?rlkey=6lh2ok89q00deqm0fgptdv1m7&st=8lx5fxip&dl=0"
+unzip -o custom_nodes.zip -d "$COMFY_PATH"
 
 # ==============================
 # ACTIVATE VENV
