@@ -33,16 +33,14 @@ for f in "$COMFY_PATH/requirements.txt" "$COMFY_PATH"/custom_nodes/*/requirement
   fi
 done
 
-# ==============================
-# INSTALL (KHÔNG chạy song song)
-# ==============================
-pip install --upgrade -r all.txt --prefer-binary --no-cache-dir
+# Deduplicate and keep last version
+sort all.txt | uniq -w 20 > all_dedup.txt
+mv all_dedup.txt all.txt
 
 # ==============================
-# FIX TORCH
+# INSTALL
 # ==============================
-pip uninstall torch torchvision torchaudio -y || true
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
+pip install --upgrade -r all.txt --prefer-binary --no-cache-dir 2>&1 | tee install.log &
 
 # ==============================
 # INSTALL CLOUDFLARED
@@ -57,6 +55,18 @@ sudo apt update
 sudo apt install -y nginx
 
 # ==============================
+# FIX TORCH
+# ==============================
+wait
+if [ $? -ne 0 ]; then
+  echo "ERROR: pip install failed. Check install.log"
+  exit 1
+fi
+pip uninstall torch torchvision torchaudio -y || true
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
+
+
+# ==============================
 # START COMFYUI
 # ==============================
 cd "$COMFY_PATH"
@@ -65,14 +75,14 @@ nohup python3 main.py --listen 0.0.0.0 --port 8188 > comfy.log 2>&1 &
 # ==============================
 # CONFIG NGINX
 # ==============================
-sudo cp nginx.conf /etc/nginx/nginx.conf
+sudo cp $(dirname "$0")/nginx.conf /etc/nginx/nginx.conf
 sudo nginx -t
 sudo service nginx restart
 
 # ==============================
 # START TUNNEL
 # ==============================
-nohup cloudflared tunnel --url http://localhost:8080 > cf.log 2>&1 &
+nohup cloudflared tunnel --url http://localhost:8188 > cf.log 2>&1 &
 cat cf.log
 
 echo "DONE"
