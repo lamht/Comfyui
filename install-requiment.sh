@@ -67,12 +67,12 @@ nohup python3 main.py --listen 0.0.0.0 --port 8188 > comfy.log 2>&1 &
 # ==============================
 sudo cp nginx.conf /etc/nginx/nginx.conf
 sudo nginx -t
-sudo systemctl restart nginx
+sudo service nginx restart
 
 # ==============================
 # START TUNNEL
 # ==============================
-nohup cloudflared tunnel --url http://localhost:8080 --region apac > cf.log 2>&1 &
-grep -o 'https://.*trycloudflare.com' cf.log | tail -n 1
+nohup cloudflared tunnel --url http://localhost:8080 > cf.log 2>&1 &
+cat cf.log
 
 echo "DONE"
