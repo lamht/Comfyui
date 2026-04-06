@@ -21,27 +21,56 @@ unzip -o custom_nodes.zip -d "$COMFY_PATH"
 if [ -d "$COMFY_PATH/venv" ]; then
   source "$COMFY_PATH/venv/bin/activate"
 fi
+# ==============================
+# MERGE REQUIREMENTS (SAFE)
+# ==============================
+echo "[+] Merge requirements..."
+
+python3 - << EOF
+import os
+from collections import OrderedDict
+
+comfy_path = "$COMFY_PATH"
+req_files = []
+
+main_req = os.path.join(comfy_path, "requirements.txt")
+if os.path.isfile(main_req):
+    req_files.append(main_req)
+
+custom_dir = os.path.join(comfy_path, "custom_nodes")
+if os.path.isdir(custom_dir):
+    for d in os.listdir(custom_dir):
+        f = os.path.join(custom_dir, d, "requirements.txt")
+        if os.path.isfile(f):
+            req_files.append(f)
+
+packages = OrderedDict()
+
+for file in req_files:
+    with open(file) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            name = line.split("==")[0].lower()
+            packages[name] = line
+
+out = os.path.join(comfy_path, "all.txt")
+with open(out, "w") as f:
+    for v in packages.values():
+        f.write(v + "\\n")
+
+print(f"[+] Generated {out}")
+EOF
 
 # ==============================
-# GỘP REQUIREMENTS (an toàn)
+# INSTALL REQUIREMENTS (SYNC)
 # ==============================
-> all.txt
-for f in "$COMFY_PATH/requirements.txt" "$COMFY_PATH"/custom_nodes/*/requirements.txt; do
-  if [ -f "$f" ]; then
-    cat "$f" >> all.txt
-    echo "" >> all.txt
-  fi
-done
-
-# Deduplicate and keep last version
-sort all.txt | uniq -w 20 > all_dedup.txt
-mv all_dedup.txt all.txt
-
-# ==============================
-# INSTALL
-# ==============================
-pip install --upgrade -r all.txt --prefer-binary --no-cache-dir 2>&1 | tee install.log &
-
+echo "[+] Installing Python packages..."
+pip install --upgrade -r "$COMFY_PATH/all.txt" \
+  --prefer-binary --no-cache-dir \
+  2>&1 | tee "$COMFY_PATH/install.log"
+  
 # ==============================
 # INSTALL CLOUDFLARED
 # ==============================
@@ -75,14 +104,14 @@ nohup python3 main.py --listen 0.0.0.0 --port 8188 > comfy.log 2>&1 &
 # ==============================
 # CONFIG NGINX
 # ==============================
-sudo cp $(dirname "$0")/nginx.conf /etc/nginx/nginx.conf
+cp ./nginx.conf /etc/nginx/nginx.conf
 sudo nginx -t
 sudo service nginx restart
 
 # ==============================
 # START TUNNEL
 # ==============================
-nohup cloudflared tunnel --url http://localhost:8188 > cf.log 2>&1 &
+nohup cloudflared tunnel --url http://localhost:8080 > cf.log 2>&1 &
 cat cf.log
 
 echo "DONE"
