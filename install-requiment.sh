@@ -2,10 +2,16 @@
 set -e
 
 # ==============================
-# SET PATH
+# SCRIPT PATHS
 # ==============================
-echo 'export COMFY_PATH="$(dirname "$0")/ComfyUI"' >> ~/.bashrc
-export COMFY_PATH="$(dirname "$0")/ComfyUI"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+COMFY_PATH="$SCRIPT_DIR/ComfyUI"
+
+# Persist COMFY_PATH for shell sessions
+if ! grep -qx "export COMFY_PATH=\"$COMFY_PATH\"" ~/.bashrc 2>/dev/null; then
+  echo "export COMFY_PATH=\"$COMFY_PATH\"" >> ~/.bashrc
+fi
+export COMFY_PATH
 
 echo "Using ComfyUI at: $COMFY_PATH"
 
@@ -69,7 +75,7 @@ EOF
 echo "[+] Installing Python packages..."
 pip install --upgrade -r "$COMFY_PATH/all.txt" \
   --prefer-binary --no-cache-dir \
-  2>&1 | tee "$COMFY_PATH/install.log"
+  2>&1 | tee "$COMFY_PATH/install.log" &
   
 # ==============================
 # INSTALL CLOUDFLARED
@@ -104,7 +110,7 @@ nohup python3 main.py --listen 0.0.0.0 --port 8188 > comfy.log 2>&1 &
 # ==============================
 # CONFIG NGINX
 # ==============================
-cp ./nginx.conf /etc/nginx/nginx.conf
+sudo cp "$SCRIPT_DIR/nginx.conf" /etc/nginx/nginx.conf
 sudo nginx -t
 sudo service nginx restart
 
