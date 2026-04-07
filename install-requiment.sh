@@ -80,13 +80,13 @@ pip install --upgrade -r "$COMFY_PATH/all.txt" \
 # ==============================
 # INSTALL CLOUDFLARED
 # ==============================
-wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && \
 sudo dpkg -i cloudflared-linux-amd64.deb
 
 # ==============================
 # INSTALL NGINX
 # ==============================
-sudo apt update
+sudo apt update && \
 sudo apt install -y nginx
 
 # ==============================
@@ -110,8 +110,8 @@ nohup python3 main.py --listen 0.0.0.0 --port 8188 > comfy.log 2>&1 &
 # ==============================
 # CONFIG NGINX
 # ==============================
-sudo cp "$SCRIPT_DIR/nginx.conf" /etc/nginx/nginx.conf
-sudo nginx -t
+sudo cp "$SCRIPT_DIR/nginx.conf" /etc/nginx/nginx.conf && \
+sudo nginx -t && \
 sudo service nginx restart &
 
 # ==============================
