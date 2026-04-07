@@ -117,6 +117,8 @@ sudo service nginx restart &
 # ==============================
 # START TUNNEL
 # ==============================
-nohup cloudflared tunnel --url http://localhost:8080
+nohup cloudflared tunnel --url http://localhost:8080 > cf.log 2>&1 &
+sleep 5
+cat cf.log
 
 echo "DONE"
