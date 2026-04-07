@@ -112,7 +112,7 @@ nohup python3 main.py --listen 0.0.0.0 --port 8188 > comfy.log 2>&1 &
 # ==============================
 sudo cp "$SCRIPT_DIR/nginx.conf" /etc/nginx/nginx.conf
 sudo nginx -t
-sudo service nginx restart
+sudo service nginx restart &
 
 # ==============================
 # START TUNNEL
