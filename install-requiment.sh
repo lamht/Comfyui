@@ -27,47 +27,6 @@ unzip -o custom_nodes.zip -d "$COMFY_PATH"
 if [ -d "$COMFY_PATH/venv" ]; then
   source "$COMFY_PATH/venv/bin/activate"
 fi
-# ==============================
-# MERGE REQUIREMENTS (SAFE)
-# ==============================
-echo "[+] Merge requirements..."
-
-python3 - << EOF
-import os
-from collections import OrderedDict
-
-comfy_path = "$COMFY_PATH"
-req_files = []
-
-main_req = os.path.join(comfy_path, "requirements.txt")
-if os.path.isfile(main_req):
-    req_files.append(main_req)
-
-custom_dir = os.path.join(comfy_path, "custom_nodes")
-if os.path.isdir(custom_dir):
-    for d in os.listdir(custom_dir):
-        f = os.path.join(custom_dir, d, "requirements.txt")
-        if os.path.isfile(f):
-            req_files.append(f)
-
-packages = OrderedDict()
-
-for file in req_files:
-    with open(file) as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            name = line.split("==")[0].lower()
-            packages[name] = line
-
-out = os.path.join(comfy_path, "all.txt")
-with open(out, "w") as f:
-    for v in packages.values():
-        f.write(v + "\\n")
-
-print(f"[+] Generated {out}")
-EOF
 
 # ==============================
 # INSTALL REQUIREMENTS (SYNC)
