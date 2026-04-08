@@ -85,7 +85,9 @@ pip install -r "$COMFY_PATH/all.txt" \
   --retries 5 \
   --use-deprecated=legacy-resolver \
   2>&1 | tee "$COMFY_PATH/install.log"
-  
+
+pip install -r "$COMFY_PATH/requirements.txt"
+
 # ==============================
 # INSTALL CLOUDFLARED
 # ==============================
