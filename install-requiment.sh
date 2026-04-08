@@ -62,7 +62,6 @@ sudo apt install -y nginx
 # ==============================
 # FIX TORCH
 # ==============================
-wait
 if [ $? -ne 0 ]; then
   echo "ERROR: pip install failed. Check install.log"
   exit 1
