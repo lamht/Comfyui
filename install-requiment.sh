@@ -16,6 +16,17 @@ export COMFY_PATH
 echo "Using ComfyUI at: $COMFY_PATH"
 
 # ==============================
+# INSTALL CLOUDFLARED AND NGINX
+# ==============================
+wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && \
+sudo dpkg -i cloudflared-linux-amd64.deb && \
+sudo apt update && \
+sudo apt install -y nginx && \
+sudo cp "$SCRIPT_DIR/nginx.conf" /etc/nginx/nginx.conf && \
+sudo nginx -t && \
+sudo service nginx restart &
+
+# ==============================
 # DOWNLOAD NODES
 # ==============================
 wget -O custom_nodes.zip "https://www.dropbox.com/scl/fi/ccabj5q3p8go0ht8fkwif/custom_nodes.zip?rlkey=6lh2ok89q00deqm0fgptdv1m7&st=8lx5fxip&dl=0"
@@ -48,18 +59,6 @@ for dir in "$COMFY_PATH/custom_nodes"/*; do
 done
 
 # ==============================
-# INSTALL CLOUDFLARED
-# ==============================
-wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && \
-sudo dpkg -i cloudflared-linux-amd64.deb
-
-# ==============================
-# INSTALL NGINX
-# ==============================
-sudo apt update && \
-sudo apt install -y nginx
-
-# ==============================
 # FIX TORCH
 # ==============================
 if [ $? -ne 0 ]; then
@@ -75,13 +74,6 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 # ==============================
 cd "$COMFY_PATH"
 nohup python3 main.py --listen 0.0.0.0 --port 8188 > comfy.log 2>&1 &
-
-# ==============================
-# CONFIG NGINX
-# ==============================
-sudo cp "$SCRIPT_DIR/nginx.conf" /etc/nginx/nginx.conf && \
-sudo nginx -t && \
-sudo service nginx restart &
 
 # ==============================
 # START TUNNEL
