@@ -73,9 +73,18 @@ EOF
 # INSTALL REQUIREMENTS (SYNC)
 # ==============================
 echo "[+] Installing Python packages..."
-pip install --upgrade -r "$COMFY_PATH/all.txt" \
-  --prefer-binary --no-cache-dir \
-  2>&1 | tee "$COMFY_PATH/install.log" &
+
+# đảm bảo pip sạch và mới
+python3 -m pip install --upgrade pip setuptools wheel
+
+# install với fallback resolver nếu cần
+pip install -r "$COMFY_PATH/all.txt" \
+  --prefer-binary \
+  --no-cache-dir \
+  --timeout 100 \
+  --retries 5 \
+  --use-deprecated=legacy-resolver \
+  2>&1 | tee "$COMFY_PATH/install.log"
   
 # ==============================
 # INSTALL CLOUDFLARED
