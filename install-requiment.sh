@@ -5,7 +5,7 @@ set -e
 # SCRIPT PATHS
 # ==============================
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-COMFY_PATH="$SCRIPT_DIR/ComfyUI"
+export COMFY_PATH="$SCRIPT_DIR/ComfyUI"
 
 # Persist COMFY_PATH for shell sessions
 if ! grep -qx "export COMFY_PATH=\"$COMFY_PATH\"" ~/.bashrc 2>/dev/null; then
@@ -74,19 +74,19 @@ EOF
 # ==============================
 echo "[+] Installing Python packages..."
 
-# đảm bảo pip sạch và mới
 python3 -m pip install --upgrade pip setuptools wheel
-
-# install với fallback resolver nếu cần
-pip install -r "$COMFY_PATH/all.txt" \
-  --prefer-binary \
-  --no-cache-dir \
-  --timeout 100 \
-  --retries 5 \
-  --use-deprecated=legacy-resolver \
-  2>&1 | tee "$COMFY_PATH/install.log"
-
 pip install -r "$COMFY_PATH/requirements.txt"
+
+echo "[+] Installing custom_nodes requirements..."
+
+for dir in "$COMFY_PATH/custom_nodes"/*; do
+  if [ -f "$dir/requirements.txt" ]; then
+    echo "[+] Installing: $dir"
+
+    pip install -r "$dir/requirements.txt"
+      2>&1 | tee -a "$COMFY_PATH/install.log"
+  fi
+done
 
 # ==============================
 # INSTALL CLOUDFLARED
