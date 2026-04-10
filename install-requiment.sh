@@ -45,7 +45,7 @@ fi
 echo "[+] Installing Python packages..."
 
 python3 -m pip install --upgrade pip setuptools wheel
-pip install -r "$COMFY_PATH/requirements.txt"
+pip install -r "$COMFY_PATH/requirements.txt" --prefer-binary
 
 echo "[+] Installing custom_nodes requirements..."
 
@@ -53,7 +53,7 @@ for dir in "$COMFY_PATH/custom_nodes"/*; do
   if [ -f "$dir/requirements.txt" ]; then
     echo "[+] Installing: $dir"
 
-    pip install -r "$dir/requirements.txt"
+    pip install -r "$dir/requirements.txt" --prefer-binary
       2>&1 | tee -a "$COMFY_PATH/install.log"
   fi
 done
