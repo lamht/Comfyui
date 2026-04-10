@@ -78,7 +78,7 @@ nohup python3 main.py --listen 0.0.0.0 --port 8188 > $SCRIPT_DIR/comfy.log 2>&1 
 # ==============================
 # START TUNNEL
 # ==============================
-nohup cloudflared tunnel --url http://localhost:8080 > $SCRIPT_DIR/cf.log 2>&1 &
+nohup cloudflared tunnel --url http://localhost:9999 > $SCRIPT_DIR/cf.log 2>&1 &
 sleep 5
 cat $SCRIPT_DIR/cf.log
 
