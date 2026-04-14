@@ -6,6 +6,9 @@ set -e
 # ==============================
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 export COMFY_PATH="$SCRIPT_DIR/ComfyUI"
+ALL_REQ="$COMFY_PATH/all.txt"
+FINAL_REQ="$COMFY_PATH/final.txt"
+LOG_FILE="$COMFY_PATH/install.log"
 
 # Persist COMFY_PATH for shell sessions
 if ! grep -qx "export COMFY_PATH=\"$COMFY_PATH\"" ~/.bashrc 2>/dev/null; then
@@ -49,14 +52,24 @@ pip install -r "$COMFY_PATH/requirements.txt" --prefer-binary
 
 echo "[+] Installing custom_nodes requirements..."
 
-for dir in "$COMFY_PATH/custom_nodes"/*; do
-  if [ -f "$dir/requirements.txt" ]; then
-    echo "[+] Installing: $dir"
+find "$COMFY_PATH/custom_nodes" -type f -name "requirements.txt" \
+  -exec cat {} + > "$ALL_REQ"
+pip install pip-tools
 
-    pip install -r "$dir/requirements.txt" --prefer-binary
-      2>&1 | tee -a "$COMFY_PATH/install.log"
-  fi
-done
+if pip-compile "$ALL_REQ" -o "$FINAL_REQ" --resolver=backtracking \
+  2>&1 | tee -a "$LOG_FILE"; then
+
+  echo "[+] Compile success"
+
+else
+  echo "[!] Compile failed → fallback dùng all.txt"
+  cp "$ALL_REQ" "$FINAL_REQ"
+fi
+
+pip install -r "$FINAL_REQ" \
+  --prefer-binary \
+  --upgrade-strategy only-if-needed \
+  2>&1 | tee -a "$LOG_FILE"
 
 # ==============================
 # FIX TORCH
