@@ -52,6 +52,8 @@ import comfy.ldm.qwen_image.model
 import comfy.ldm.kandinsky5.model
 import comfy.ldm.anima.model
 import comfy.ldm.ace.ace_step15
+import comfy.ldm.rt_detr.rtdetr_v4
+import comfy.ldm.ernie.model
 
 import comfy.model_management
 import comfy.patcher_extension
@@ -890,7 +892,7 @@ class Flux(BaseModel):
         return torch.cat((image, mask), dim=1)
 
     def encode_adm(self, **kwargs):
-        return kwargs["pooled_output"]
+        return kwargs.get("pooled_output", None)
 
     def extra_conds(self, **kwargs):
         out = super().extra_conds(**kwargs)
@@ -937,9 +939,10 @@ class LongCatImage(Flux):
         transformer_options = transformer_options.copy()
         rope_opts = transformer_options.get("rope_options", {})
         rope_opts = dict(rope_opts)
+        pe_len = float(c_crossattn.shape[1]) if c_crossattn is not None else 512.0
         rope_opts.setdefault("shift_t", 1.0)
-        rope_opts.setdefault("shift_y", 512.0)
-        rope_opts.setdefault("shift_x", 512.0)
+        rope_opts.setdefault("shift_y", pe_len)
+        rope_opts.setdefault("shift_x", pe_len)
         transformer_options["rope_options"] = rope_opts
         return super()._apply_model(x, t, c_concat, c_crossattn, control, transformer_options, **kwargs)
 
@@ -1059,6 +1062,10 @@ class LTXAV(BaseModel):
         guide_attention_entries = kwargs.get("guide_attention_entries", None)
         if guide_attention_entries is not None:
             out['guide_attention_entries'] = comfy.conds.CONDConstant(guide_attention_entries)
+
+        ref_audio = kwargs.get("ref_audio", None)
+        if ref_audio is not None:
+            out['ref_audio'] = comfy.conds.CONDConstant(ref_audio)
 
         return out
 
@@ -1952,3 +1959,18 @@ class Kandinsky5Image(Kandinsky5):
 
     def concat_cond(self, **kwargs):
         return None
+
+class RT_DETR_v4(BaseModel):
+    def __init__(self, model_config, model_type=ModelType.FLOW, device=None):
+        super().__init__(model_config, model_type, device=device, unet_model=comfy.ldm.rt_detr.rtdetr_v4.RTv4)
+
+class ErnieImage(BaseModel):
+    def __init__(self, model_config, model_type=ModelType.FLOW, device=None):
+        super().__init__(model_config, model_type, device=device, unet_model=comfy.ldm.ernie.model.ErnieImageModel)
+
+    def extra_conds(self, **kwargs):
+        out = super().extra_conds(**kwargs)
+        cross_attn = kwargs.get("cross_attn", None)
+        if cross_attn is not None:
+            out['c_crossattn'] = comfy.conds.CONDRegular(cross_attn)
+        return out
