@@ -53,10 +53,10 @@ pip install -r "$COMFY_PATH/requirements.txt" --prefer-binary
 echo "[+] Installing custom_nodes requirements..."
 
 {
-  find "$COMFY_PATH/custom_nodes" -type f -name "requirements.txt" \
+  find "$COMFY_PATH/custom_nodes" -type f -name "requirements.txt" -size +0c \
     -exec sh -c 'cat "$1"; echo' _ {} \;
 } > "$ALL_REQ"
-sed -i 's/transparent-backgrounddiffusers/transparent-background\ndiffusers/' "$ALL_REQ"
+# sed -i 's/transparent-backgrounddiffusers/transparent-background\ndiffusers/' "$ALL_REQ"
 pip install pip-tools
 
 if pip-compile "$ALL_REQ" -o "$FINAL_REQ" --resolver=backtracking \
