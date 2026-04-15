@@ -24,8 +24,14 @@ echo "Using ComfyUI at: $COMFY_PATH"
 wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && \
 sudo dpkg -i cloudflared-linux-amd64.deb && \
 sudo apt update && \
+sudo apt install -y curl gnupg2 ca-certificates lsb-release ubuntu-keyring && \
+curl -fsSL https://nginx.org/keys/nginx_signing.key | gpg --dearmor \
+| sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null && \
+echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
+http://nginx.org/packages/mainline/ubuntu $(lsb_release -cs) nginx" \
+| sudo tee /etc/apt/sources.list.d/nginx.list && \
+sudo apt update && \
 sudo apt install -y nginx && \
-sudo cp "$SCRIPT_DIR/nginx.conf" /etc/nginx/nginx.conf && \
 sudo nginx -t && \
 sudo service nginx restart &
 
