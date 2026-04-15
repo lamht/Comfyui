@@ -30,6 +30,7 @@ curl -fsSL https://nginx.org/keys/nginx_signing.key | gpg --dearmor \
 echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
 http://nginx.org/packages/mainline/ubuntu $(lsb_release -cs) nginx" \
 | sudo tee /etc/apt/sources.list.d/nginx.list && \
+sudo cp "$SCRIPT_DIR/nginx.conf" /etc/nginx/nginx.conf && \
 sudo apt update && \
 sudo apt install -y nginx && \
 sudo nginx -t && \
