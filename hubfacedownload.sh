@@ -76,9 +76,9 @@ hf download gmp-dev/gmp-lora \
   --local-dir $BASE/loras
 mv $BASE/loras/Lora/Likeness/realisticVaginasGod_sdVSGp1S.safetensors $BASE/loras/realisticVaginasGod_sdVSGp1S.safetensors
 
-hf download fal/FLUX.2-dev-Turbo \
-flux.2-turbo-lora.safetensors \
---local-dir $BASE/loras
+# hf download fal/FLUX.2-dev-Turbo \
+# flux.2-turbo-lora.safetensors \
+# --local-dir $BASE/loras
 
 # ==============================
 # DOWNLOAD CHECKPOINT
