@@ -18,7 +18,6 @@ env:
   REGISTRY_GHCR: ghcr.io
   IMAGE_NAME_GHCR: ${{ github.repository }}/comfyui
   REGISTRY_DOCKERHUB: docker.io
-  IMAGE_NAME_DOCKERHUB: ${{ secrets.DOCKERHUB_USERNAME }}/comfyui
 
 jobs:
   build:
@@ -67,7 +66,7 @@ jobs:
         id: meta_dockerhub
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY_DOCKERHUB }}/${{ env.IMAGE_NAME_DOCKERHUB }}
+          images: ${{ env.REGISTRY_DOCKERHUB }}/${{ secrets.DOCKERHUB_USERNAME }}/comfyui
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
