@@ -13,12 +13,6 @@ if [ "${HF_AUTO_DOWNLOAD:-1}" != "0" ]; then
   fi
 fi
 
-sudo service nginx restart
-
-nohup cloudflared tunnel --url http://localhost:9999 > $SCRIPT_DIR/cf.log 2>&1 &
-sleep 5
-cat $SCRIPT_DIR/cf.log
-
 # Start ComfyUI
 cd /app/ComfyUI
 exec python main.py --listen 0.0.0.0 --port 8188

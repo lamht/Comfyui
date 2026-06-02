@@ -16,19 +16,6 @@ ARG LOG_FILE="$COMFY_PATH/install.log"
 WORKDIR /app
 COPY . /app
 
-RUN wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && \
-dpkg -i cloudflared-linux-amd64.deb && \
-apt update && \
-apt install -y curl gnupg2 ca-certificates lsb-release ubuntu-keyring && \
-curl -fsSL https://nginx.org/keys/nginx_signing.key | gpg --dearmor \
-| tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null && \
-echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
-http://nginx.org/packages/mainline/ubuntu $(lsb_release -cs) nginx" \
-| tee /etc/apt/sources.list.d/nginx.list && \
-apt update && \
-apt install -y nginx && \
-cp "$SCRIPT_DIR/nginx.conf" /etc/nginx/nginx.conf
-
 RUN wget -O custom_nodes.zip "https://www.dropbox.com/scl/fi/ccabj5q3p8go0ht8fkwif/custom_nodes.zip?rlkey=6lh2ok89q00deqm0fgptdv1m7&st=8lx5fxip&dl=0"
 RUN unzip -o custom_nodes.zip -d "$COMFY_PATH"
 
