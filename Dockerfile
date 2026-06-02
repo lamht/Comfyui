@@ -7,6 +7,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 ARG SCRIPT_DIR="/app"
+ENV SCRIPT_DIR="/app"
 ARG COMFY_PATH="$SCRIPT_DIR/ComfyUI"
 ARG ALL_REQ="$COMFY_PATH/all.txt"
 ARG FINAL_REQ="$COMFY_PATH/final.txt"
