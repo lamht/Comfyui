@@ -1,0 +1,18 @@
+version: "3.8"
+services:
+  comfy:
+    build: .
+    container_name: comfyui
+    ports:
+      - "8188:8188"
+    volumes:
+      - ./:/app:rw
+    environment:
+      - HF_AUTO_DOWNLOAD=1
+      - HF_TOKEN=${HF_TOKEN:-}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sSf http://localhost:8188/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
