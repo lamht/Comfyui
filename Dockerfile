@@ -6,11 +6,11 @@ RUN apt-get update \
        git curl wget build-essential libgl1 libglib2.0-0 ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-ENV SCRIPT_DIR="/app"
-ENV COMFY_PATH="$SCRIPT_DIR/ComfyUI"
-ENV ALL_REQ="$COMFY_PATH/all.txt"
-ENV FINAL_REQ="$COMFY_PATH/final.txt"
-ENV LOG_FILE="$COMFY_PATH/install.log"
+ARG SCRIPT_DIR="/app"
+ARG COMFY_PATH="$SCRIPT_DIR/ComfyUI"
+ARG ALL_REQ="$COMFY_PATH/all.txt"
+ARG FINAL_REQ="$COMFY_PATH/final.txt"
+ARG LOG_FILE="$COMFY_PATH/install.log"
 
 WORKDIR /app
 COPY . /app

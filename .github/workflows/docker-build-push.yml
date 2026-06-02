@@ -79,6 +79,8 @@ jobs:
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
+          build-args: |
+            SKIP_RUNTIME=1
           tags: ${{ steps.meta_ghcr.outputs.tags }}
           labels: ${{ steps.meta_ghcr.outputs.labels }}
           cache-from: type=gha
@@ -90,6 +92,8 @@ jobs:
         with:
           context: .
           push: true
+          build-args: |
+            SKIP_RUNTIME=1
           tags: ${{ steps.meta_dockerhub.outputs.tags }}
           labels: ${{ steps.meta_dockerhub.outputs.labels }}
           cache-from: type=gha
