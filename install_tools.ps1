@@ -112,7 +112,6 @@ Expand-Archive -Path $ZipPath -DestinationPath $ComfyPath -Force
 # Xóa file zip sau khi giải nén xong cho sạch máy
 Remove-Item $ZipPath -Force
 
-# 2. Git clone các kho lưu trữ (Kiểm tra nếu chưa có thư mục thì mới clone để tránh báo lỗi)
 Remove-Item -Path "$CustomNodesPath\rgthree-comfy" -Recurse -Force
 Remove-Item -Path "$CustomNodesPath\ComfyUI-Crystools" -Recurse -Force
 Remove-Item -Path "$CustomNodesPath\comfyui-manager" -Recurse -Force
