@@ -1,110 +1,63 @@
-$ErrorActionPreference = "Stop"
+<#
+.SYNOPSIS
+    Automated script to install Python 3.10, Hugging Face CLI, Cloudflare Tunnel CLI, and Git on Windows.
+.DESCRIPTION
+    This script uses Winget and Pip to install the required tools.
+    Requires Administrator privileges (Run as Administrator).
+#>
 
-# ==============================
-# SET TOKEN
-# ==============================
-# $env:HF_TOKEN = "hf_your_token_here"
-
-# ==============================
-# INSTALL HF CLI (hf)
-# ==============================
-Write-Host "Kiem tra va cai dat Hugging Face CLI (hf)..." -ForegroundColor Yellow
-if (!(Get-Command hf -ErrorAction SilentlyContinue)) {
-    Invoke-RestMethod -Uri "https://hf.co/cli/install.ps1" | Invoke-Expression
+# 1. Check for Administrator privileges
+$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+if (-not $isAdmin) {
+    Write-Error "Please run PowerShell as Administrator to execute this script!"
+    Exit
 }
 
-# Dam bao PATH co hf
-$LocalBin = Join-Path $HOME ".local\bin"
-if ($env:Path -notlike "*$LocalBin*") {
-    $env:Path += ";$LocalBin"
-}
+Write-Host "=== STARTING AUTOMATED INSTALLATION PROCESS (4 TOOLS) ===" -ForegroundColor Cyan
 
-# Tang toc download
-$env:HF_HUB_ENABLE_HF_TRANSFER = "1"
+# 2. Install Python 3.10 using Winget
+Write-Host "`n[1/4] Installing Python 3.10..." -ForegroundColor Yellow
+winget install Python.Python.3.10 --override "/passive PrependPath=1 Include_test=0" --exact --accept-source-agreements --accept-package-agreements
 
-# ==============================
-# LOGIN
-# ==============================
-if (![string]::IsNullOrEmpty($env:HF_TOKEN)) {
-    Write-Host "Dang dang nhap vao Hugging Face..." -ForegroundColor Cyan
-    hf auth login --token $env:HF_TOKEN
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "-> Python 3.10 installed successfully!" -ForegroundColor Green
 } else {
-    Write-Host "[WARN] No HF_TOKEN provided, downloading public models only" -ForegroundColor Yellow
+    Write-Warning "Python 3.10 might already be installed or an error occurred."
 }
 
-# ==============================
-# BASE PATH
-# ==============================
-$Base = Join-Path $PSScriptRoot "ComfyUI\models"
+# 3. Refresh PATH environment variable in the current session
+Write-Host "Updating session environment variables..." -ForegroundColor Gray
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 
-# Tao cac thu muc neu chua ton tai
-$SubDirs = @("loras", "checkpoints", "clip", "vae", "diffusion_models")
-foreach ($Dir in $SubDirs) {
-    $TargetDir = Join-Path $Base $Dir
-    if (!(Test-Path $TargetDir)) {
-        New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
-    }
+# 4. Install Hugging Face CLI using Pip
+Write-Host "`n[2/4] Installing Hugging Face CLI..." -ForegroundColor Yellow
+if (Get-Command pip -ErrorAction SilentlyContinue) {
+    python -m pip install --upgrade pip
+    pip install "huggingface_hub[cli]"
+    Write-Host "-> Hugging Face CLI installed successfully!" -ForegroundColor Green
+} else {
+    Write-Error "Could not find 'pip' command. Please restart PowerShell and manually run: pip install huggingface_hub[cli]"
 }
 
-# ==============================
-# DOWNLOAD LORA
-# ==============================
-Write-Host "`n--- DANG TAI LORAS ---" -ForegroundColor Cyan
+# 5. Install Cloudflare Tunnel CLI using Winget
+Write-Host "`n[3/4] Installing Cloudflare Tunnel CLI (cloudflared)..." -ForegroundColor Yellow
+winget install Cloudflare.cloudflared --exact --accept-source-agreements --accept-package-agreements
 
-hf download Aitrepreneur/FLX scg-anatomy-female-v2.safetensors --local-dir "$Base\loras"
-hf download uriel353/flux-female-anatomy flux-female-anatomy.safetensors --local-dir "$Base\loras"
-
-# ==============================
-# DOWNLOAD LORA (FACE SWAP)
-# ==============================
-hf download Alissonerdx/BFS-Best-Face-Swap bfs_head_v1_flux-klein_9b_step3500_rank128.safetensors --local-dir "$Base\loras"
-
-hf download ali-vilab/ACE_Plus portrait/comfyui_portrait_lora64.safetensors --local-dir "$Base\loras"
-if (Test-Path "$Base\loras\portrait\comfyui_portrait_lora64.safetensors") {
-    Move-Item -Path "$Base\loras\portrait\comfyui_portrait_lora64.safetensors" -Destination "$Base\loras\" -Force
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "-> Cloudflare Tunnel CLI installed successfully!" -ForegroundColor Green
+} else {
+    Write-Warning "Cloudflare Tunnel might already be installed or winget returned a skip code."
 }
 
-hf download ali-vilab/ACE_Plus subject/comfyui_subject_lora16.safetensors --local-dir "$Base\loras"
-if (Test-Path "$Base\loras\subject\comfyui_subject_lora16.safetensors") {
-    Move-Item -Path "$Base\loras\subject\comfyui_subject_lora16.safetensors" -Destination "$Base\loras\" -Force
+# 6. Install Git using Winget
+Write-Host "`n[4/4] Installing Git..." -ForegroundColor Yellow
+winget install Git.Git --exact --accept-source-agreements --accept-package-agreements
+
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "-> Git installed successfully!" -ForegroundColor Green
+} else {
+    Write-Warning "Git might already be installed."
 }
 
-hf download dx8152/Flux2-Klein-9B-Consistency Klein-consistency.safetensors --local-dir "$Base\loras"
-
-hf download gmp-dev/gmp-lora Lora/Likeness/realisticVaginasGod_sdVSGp1S.safetensors --local-dir "$Base\loras"
-if (Test-Path "$Base\loras\Lora\Likeness\realisticVaginasGod_sdVSGp1S.safetensors") {
-    Move-Item -Path "$Base\loras\Lora\Likeness\realisticVaginasGod_sdVSGp1S.safetensors" -Destination "$Base\loras\" -Force
-}
-
-# ==============================
-# DOWNLOAD CHECKPOINT
-# ==============================
-Write-Host "`n--- DANG TAI CHECKPOINTS ---" -ForegroundColor Cyan
-hf download black-forest-labs/FLUX.2-klein-9b-fp8 flux-2-klein-9b-fp8.safetensors --local-dir "$Base\diffusion_models"
-
-# ==============================
-# DOWNLOAD CLIP
-# ==============================
-Write-Host "`n--- DANG TAI CLIP ---" -ForegroundColor Cyan
-hf download Comfy-Org/vae-text-encorder-for-flux-klein-9b split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors --local-dir "$Base\clip"
-if (Test-Path "$Base\clip\split_files\text_encoders\qwen_3_8b_fp8mixed.safetensors") {
-    Move-Item -Path "$Base\clip\split_files\text_encoders\qwen_3_8b_fp8mixed.safetensors" -Destination "$Base\clip\" -Force
-}
-
-# ==============================
-# DOWNLOAD VAE
-# ==============================
-Write-Host "`n--- DANG TAI VAE ---" -ForegroundColor Cyan
-hf download Comfy-Org/vae-text-encorder-for-flux-klein-9b split_files/vae/flux2-vae.safetensors --local-dir "$Base\vae"
-if (Test-Path "$Base\vae\split_files\vae\flux2-vae.safetensors") {
-    Move-Item -Path "$Base\vae\split_files\vae\flux2-vae.safetensors" -Destination "$Base\vae\" -Force
-}
-
-# ==============================
-# DOWNLOAD ADDITIONAL MODELS
-# ==============================
-Write-Host "`n--- DANG TAI CAC MODEL BO SUNG (DROPBOX) ---" -ForegroundColor Cyan
-Invoke-WebRequest -Uri "https://www.dropbox.com/scl/fi/pws3t2zqx6597fuy2darh/pusfix-klein.safetensors?rlkey=3fooobe4nawbn3ttisl50zt9n&st=oj9yimns&dl=1" -OutFile "$Base\loras\pusfix-klein.safetensors"
-Invoke-WebRequest -Uri "https://www.dropbox.com/scl/fi/joh1wnos385ynomj49x8e/klein_lora_face1.safetensors?rlkey=xnb5uee5sklpza56pup0jtdt2&st=7sscwh2r&dl=1" -OutFile "$Base\loras\klein_lora_face1.safetensors"
-
-Write-Host "`n✅ Download complete!" -ForegroundColor Green
+Write-Host "`n=== ALL INSTALLATIONS COMPLETED ===" -ForegroundColor Cyan
+Write-Host "NOTE: Please CLOSE this PowerShell window and OPEN a new one for all commands (python, huggingface-cli, cloudflared, git) to work correctly." -ForegroundColor Magenta
