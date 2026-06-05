@@ -59,5 +59,14 @@ if ($LASTEXITCODE -eq 0) {
     Write-Warning "Git might already be installed."
 }
 
+# 1. Tải file zip của Nginx
+curl.exe -L -o "nginx.zip" "https://nginx.org/download/nginx-1.26.1.zip"
+
+# 2. Giải nén vào thư mục C:\Work\nginx
+Expand-Archive -Path "nginx.zip" -DestinationPath "C:\Work\nginx" -Force
+
+# 3. Xóa file zip sau khi giải nén xong
+Remove-Item "nginx.zip"
+
 Write-Host "`n=== ALL INSTALLATIONS COMPLETED ===" -ForegroundColor Cyan
 Write-Host "NOTE: Please CLOSE this PowerShell window and OPEN a new one for all commands (python, huggingface-cli, cloudflared, git) to work correctly." -ForegroundColor Magenta
