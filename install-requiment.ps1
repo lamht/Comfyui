@@ -51,8 +51,9 @@ if (!(Test-Path $CustomNodesPath)) {
 # 1. Tải và giải nén file custom_nodes.zip từ Dropbox
 $ZipPath = Join-Path $ComfyPath "custom_nodes.zip"
 Write-Host "-> Downloading custom_nodes.zip..." -ForegroundColor Gray
-# Đổi dl=0 thành dl=1 để tải trực tiếp file
-Invoke-WebRequest -Uri "https://www.dropbox.com/scl/fi/ccabj5q3p8go0ht8fkwif/custom_nodes.zip?rlkey=6lh2ok89q00deqm0fgptdv1m7&st=8lx5fxip&dl=1" -OutFile $ZipPath
+# Keep dl=1 to force direct download
+$DropboxUrl = 'https://www.dropbox.com/scl/fi/ccabj5q3p8go0ht8fkwif/custom_nodes.zip?rlkey=6lh2ok89q00deqm0fgptdv1m7&st=8lx5fxip&dl=1'
+curl.exe -L -o "$ZipPath" $DropboxUrl
 
 Write-Host "-> Extracting custom_nodes.zip..." -ForegroundColor Gray
 # Giải nén đè (-Force tương đương với -o trong unzip)
@@ -136,20 +137,6 @@ Write-Host "=== DOWNLOADING ADDITIONAL MODELS ===" -ForegroundColor Cyan
 if (!(Test-Path $LorasPath)) { 
     New-Item -ItemType Directory -Path $LorasPath -Force | Out-Null 
 }
-
-$Model1Path = Join-Path $LorasPath "pusfix-klein.safetensors"
-if (!(Test-Path $Model1Path)) {
-    Write-Host "-> Downloading pusfix-klein.safetensors..." -ForegroundColor Gray
-    Invoke-WebRequest -Uri "https://www.dropbox.com/scl/fi/pws3t2zqx6597fuy2darh/pusfix-klein.safetensors?rlkey=3fooobe4nawbn3ttisl50zt9n&st=oj9yimns&dl=1" -OutFile $Model1Path
-}
-
-$Model2Path = Join-Path $LorasPath "klein_lora_face1.safetensors"
-if (!(Test-Path $Model2Path)) {
-    Write-Host "-> Downloading klein_lora_face1.safetensors..." -ForegroundColor Gray
-    Invoke-WebRequest -Uri "https://www.dropbox.com/scl/fi/joh1wnos385ynomj49x8e/klein_lora_face1.safetensors?rlkey=xnb5uee5sklpza56pup0jtdt2&st=7sscwh2r&dl=1" -OutFile $Model2Path
-}
-
-Write-Host "[+] Models download completed!" -ForegroundColor Green
 
 Write-Host ""
 # ==============================

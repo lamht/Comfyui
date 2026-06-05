@@ -8,7 +8,7 @@ $ErrorActionPreference = "Stop"
 # ==============================
 # CHOOSE PATH
 # ==============================
-$Base = Join-Path $PSScriptRoot "models"
+$Base = [System.IO.Path]::Combine($PSScriptRoot, "ComfyUI", "models")
 
 # Create directories if they do not exist
 $SubDirs = @("loras", "checkpoints", "clip", "vae", "diffusion_models")
@@ -76,15 +76,16 @@ if (Test-Path "$Base\vae\split_files\vae\flux2-vae.safetensors") {
     Move-Item -Path "$Base\vae\split_files\vae\flux2-vae.safetensors" -Destination "$Base\vae\" -Force
 }
 
-# ==============================
-# DOWNLOAD ADDITIONAL MODELS (DROPBOX)
-# ==============================
 Write-Host "`n--- DOWNLOADING ADDITIONAL MODELS FROM DROPBOX ---" -ForegroundColor Cyan
-
+# Define the URLs in your current terminal session
 $DropboxUrl1 = 'https://www.dropbox.com/scl/fi/pws3t2zqx6597fuy2darh/pusfix-klein.safetensors?rlkey=3fooobe4nawbn3ttisl50zt9n&st=oj9yimns&dl=1'
-Invoke-WebRequest -Uri $DropboxUrl1 -OutFile "$Base\loras\pusfix-klein.safetensors"
-
 $DropboxUrl2 = 'https://www.dropbox.com/scl/fi/joh1wnos385ynomj49x8e/klein_lora_face1.safetensors?rlkey=xnb5uee5sklpza56pup0jtdt2&st=7sscwh2r&dl=1'
-Invoke-WebRequest -Uri $DropboxUrl2 -OutFile "$Base\loras\klein_lora_face1.safetensors"
+
+# Download the first model
+curl.exe -L --create-dirs -o "$Base\loras\pusfix-klein.safetensors" $DropboxUrl1
+
+# Download the second model 
+curl.exe -L --create-dirs -o "$Base\loras\klein_lora_face1.safetensors" $DropboxUrl2
+
 
 Write-Host "`n[SUCCESS] Download complete!" -ForegroundColor Green
