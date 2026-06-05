@@ -42,8 +42,13 @@ sudo service nginx restart &
 wget -O custom_nodes.zip "https://www.dropbox.com/scl/fi/ccabj5q3p8go0ht8fkwif/custom_nodes.zip?rlkey=6lh2ok89q00deqm0fgptdv1m7&st=8lx5fxip&dl=0"
 unzip -o custom_nodes.zip -d "$COMFY_PATH"
 
+rm -rf "$COMFY_PATH/custom_nodes/rgthree-comfy" || true
+rm -rf "$COMFY_PATH/custom_nodes/ComfyUI-Crystools" || true
+rm -rf "$COMFY_PATH/custom_nodes/comfyui-manager" || true
+
 git clone https://github.com/rgthree/rgthree-comfy.git "$COMFY_PATH/custom_nodes/rgthree-comfy" || true
 git clone https://github.com/ltdrdata/ComfyUI-Manager "$COMFY_PATH/custom_nodes/comfyui-manager" || true
+git clone https://github.com/crystian/ComfyUI-Crystools.git "$COMFY_PATH/custom_nodes/ComfyUI-Crystools" || true
 
 # ==============================
 # ACTIVATE VENV
