@@ -75,6 +75,8 @@ Copy-Item -Path "$ScriptDir\Comfyui\nginx-win.conf" -Destination "$ScriptDir\ngi
 Remove-Item "nginx.zip"
 Start-Process .\nginx.exe -WorkingDirectory "$ScriptDir\nginx" -WindowStyle Hidden
 
+Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File $ScriptDir\Comfyui\hubfacedownload.ps1" -WindowStyle Hidden
+
 curl.exe -L -o "ComfyUI.7z" "https://github.com/Comfy-Org/ComfyUI/releases/download/v0.24.0/ComfyUI_windows_portable_nvidia_cu126.7z"
 
 # This creates the folder if missing, but does nothing (and throws no error) if it already exists
