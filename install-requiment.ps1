@@ -188,7 +188,7 @@ Start-Process -FilePath "cloudflared" `
               -RedirectStandardOutput "$ScriptDir\cf.log" `
               -RedirectStandardError "$ScriptDir\cf_err.log"
 
-Write-Host "[+] Cả ComfyUI và Cloudflare Tunnel đang chạy ngầm!" -ForegroundColor Green
+Write-Host "[+] Start completed!" -ForegroundColor Green
 
 Write-Host ""
 Write-Host "DONE!" -ForegroundColor Green
