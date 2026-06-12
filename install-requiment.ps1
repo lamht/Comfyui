@@ -222,7 +222,7 @@ Start-Process -FilePath "nginx" `
 
 # Chạy ngầm cloudflared, ẩn cửa sổ, xuất log ra file cf.log và cf_err.log
 Start-Process -FilePath "cloudflared" `
-              -ArgumentList "tunnel --url http://localhost:8188" `
+              -ArgumentList "tunnel --url http://localhost:9999" `
               -WindowStyle Hidden `
               -RedirectStandardOutput "$ScriptDir\cf.log" `
               -RedirectStandardError "$ScriptDir\cf_err.log"
