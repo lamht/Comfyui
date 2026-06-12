@@ -51,14 +51,18 @@ $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";"
 # ------------------------------------------------------------------------------
 # [2/4] Install Hugging Face CLI using Pip
 # ------------------------------------------------------------------------------
-Write-Host "`n[2/4] Installing Hugging Face CLI..." -ForegroundColor Yellow
-if (Get-Command pip -ErrorAction SilentlyContinue) {
-    # --quiet reduces console rendering overhead, which speeds up processing
+Write-Host "`n[2/4] Installing Hugging Face CLI using uv/pip..." -ForegroundColor Yellow
+if (Get-Command python -ErrorAction SilentlyContinue) {
     python -m pip install --upgrade pip --quiet
-    pip install "huggingface_hub[cli]" --quiet
+    python -m pip install uv --quiet
+    if ($LASTEXITCODE -eq 0) {
+        python -m uv pip install "huggingface_hub[cli]" --quiet
+    } else {
+        python -m pip install "huggingface_hub[cli]" --quiet
+    }
     Write-Host "-> Hugging Face CLI installed successfully!" -ForegroundColor Green
 } else {
-    Write-Error "Could not find 'pip' command. Please restart PowerShell and manually run: pip install huggingface_hub[cli]"
+    Write-Error "Could not find 'python' command. Please install Python and rerun the script."
 }
 
 # ------------------------------------------------------------------------------

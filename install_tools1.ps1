@@ -19,6 +19,7 @@ Write-Host "=== STARTING AUTOMATED INSTALLATION PROCESS (4 TOOLS) ===" -Foregrou
 # Create a clean temporary directory for installers if it doesn't exist
 $DownloadDir = "$env:TEMP\ScriptDownloads"
 if (-not (Test-Path $DownloadDir)) { New-Item -ItemType Directory -Path $DownloadDir -Force | Out-Null }
+Write-Host "Download directory: $DownloadDir" -ForegroundColor Gray
 
 # Global speed optimization for Pip
 $env:PIP_DISABLE_PIP_VERSION_CHECK = "1"
@@ -27,36 +28,39 @@ $env:PIP_DEFAULT_TIMEOUT = "60"
 # ------------------------------------------------------------------------------
 # [1/4] Install Python 3.10
 # ------------------------------------------------------------------------------
-Write-Host "`n[1/4] Downloading Python 3.10 via curl..." -ForegroundColor Yellow
+Write-Host "`n[1/4] Downloading Python 3.10 installer to $DownloadDir..." -ForegroundColor Yellow
 $PythonInstaller = "$DownloadDir\python_installer.exe"
 
 # Using curl.exe with Location redirection flag for speed
 curl.exe -L -o $PythonInstaller "https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe"
 
 if (Test-Path $PythonInstaller) {
-    Write-Host "Installing Python 3.10 silently..." -ForegroundColor Gray
+    Write-Host "Installing Python 3.10 silently from $PythonInstaller..." -ForegroundColor Gray
     # Run the installer silently and wait for it to finish
     Start-Process -FilePath $PythonInstaller -ArgumentList "/passive PrependPath=1 Include_test=0" -Wait
-    Write-Host "-> Python 3.10 installed successfully!" -ForegroundColor Green
+    Write-Host "-> Python 3.10 installed successfully and added to PATH." -ForegroundColor Green
 } else {
-    Write-Error "Failed to download Python 3.10 installer."
+    Write-Error "Failed to download Python 3.10 installer to $PythonInstaller."
 }
 
 # ------------------------------------------------------------------------------
 # Refresh PATH environment variable in the current session
 # ------------------------------------------------------------------------------
-Write-Host "`nUpdating session environment variables..." -ForegroundColor Gray
+Write-Host "`nRefreshing PATH from Machine and User environment settings..." -ForegroundColor Gray
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+Write-Host "PATH refreshed." -ForegroundColor Gray
 
 # ------------------------------------------------------------------------------
 # [2/4] Install Hugging Face CLI using Pip
 # ------------------------------------------------------------------------------
-Write-Host "`n[2/4] Installing Hugging Face CLI..." -ForegroundColor Yellow
+Write-Host "`n[2/4] Installing Hugging Face CLI via pip..." -ForegroundColor Yellow
 if (Get-Command pip -ErrorAction SilentlyContinue) {
+    $PipPath = (Get-Command pip).Source
+    Write-Host "Detected pip at: $PipPath" -ForegroundColor Gray
     # --quiet reduces console rendering overhead, which speeds up processing
     python -m pip install --upgrade pip --quiet
     pip install "huggingface_hub[cli]" --quiet
-    Write-Host "-> Hugging Face CLI installed successfully!" -ForegroundColor Green
+    Write-Host "-> Hugging Face CLI installed successfully." -ForegroundColor Green
 } else {
     Write-Error "Could not find 'pip' command. Please restart PowerShell and manually run: pip install huggingface_hub[cli]"
 }
@@ -64,48 +68,60 @@ if (Get-Command pip -ErrorAction SilentlyContinue) {
 # ------------------------------------------------------------------------------
 # [3/4] Install Cloudflare Tunnel CLI (cloudflared)
 # ------------------------------------------------------------------------------
-Write-Host "`n[3/4] Downloading Cloudflare Tunnel CLI via curl..." -ForegroundColor Yellow
+Write-Host "`n[3/4] Downloading Cloudflare Tunnel CLI to $DownloadDir..." -ForegroundColor Yellow
 $CloudflaredInstaller = "$DownloadDir\cloudflared_installer.msi"
 
 curl.exe -L -o $CloudflaredInstaller "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.msi"
 
 if (Test-Path $CloudflaredInstaller) {
-    Write-Host "Installing Cloudflare Tunnel..." -ForegroundColor Gray
+    Write-Host "Installing Cloudflare Tunnel from $CloudflaredInstaller..." -ForegroundColor Gray
     # MSI silent install switch is /qn
     Start-Process -FilePath "msiexec.exe" -ArgumentList "/i `"$CloudflaredInstaller`" /qn" -Wait
-    Write-Host "-> Cloudflare Tunnel CLI installed successfully!" -ForegroundColor Green
+    Write-Host "-> Cloudflare Tunnel CLI installed successfully." -ForegroundColor Green
 } else {
-    Write-Error "Failed to download Cloudflare Tunnel installer."
+    Write-Error "Failed to download Cloudflare Tunnel installer to $CloudflaredInstaller."
 }
 
 # ------------------------------------------------------------------------------
 # [4/4] Install Git
 # ------------------------------------------------------------------------------
-Write-Host "`n[4/4] Downloading Git via curl..." -ForegroundColor Yellow
+Write-Host "`n[4/4] Downloading Git installer to $DownloadDir..." -ForegroundColor Yellow
 $GitInstaller = "$DownloadDir\git_installer.exe"
 
 # Direct link to the standalone 64-bit installer setup
 curl.exe -L -o $GitInstaller "https://github.com/git-for-windows/git/releases/download/v2.45.2.windows.1/Git-2.45.2-64-bit.exe"
 
 if (Test-Path $GitInstaller) {
-    Write-Host "Installing Git silently..." -ForegroundColor Gray
+    Write-Host "Installing Git silently from $GitInstaller..." -ForegroundColor Gray
     # /VERYSILENT and /NORESTART ensures zero prompts
     Start-Process -FilePath $GitInstaller -ArgumentList "/VERYSILENT /NORESTART" -Wait
-    Write-Host "-> Git installed successfully!" -ForegroundColor Green
+    Write-Host "-> Git installed successfully." -ForegroundColor Green
 } else {
-    Write-Error "Failed to download Git installer."
+    Write-Error "Failed to download Git installer to $GitInstaller."
 }
 
 $ScriptDir = $PSScriptRoot
-$ComfyPath = Join-Path $ScriptDir "\Comfyui\ComfyUI"
-$CustomNodesPath = Join-Path $ComfyPath "custom_nodes"
 
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 
 $nginxVersion = "nginx-1.26.1"
-curl.exe -L -o "nginx.zip" "https://nginx.org/download/$nginxVersion.zip"
+$NginxZip = "$ScriptDir\nginx.zip"
+Write-Host "Downloading nginx $nginxVersion to $NginxZip..." -ForegroundColor Yellow
+curl.exe -L -o $NginxZip "https://nginx.org/download/$nginxVersion.zip"
 
-Expand-Archive -Path "nginx.zip" -DestinationPath "$ScriptDir\nginx" -Force
+Write-Host "Extracting nginx to $ScriptDir\nginx..." -ForegroundColor Gray
+Expand-Archive -Path $NginxZip -DestinationPath "$ScriptDir\nginx" -Force
 Move-Item -Path "$ScriptDir\nginx\$nginxVersion\*" -Destination "$ScriptDir\nginx" -Force
 Copy-Item -Path "$ScriptDir\nginx-win.conf" -Destination "$ScriptDir\nginx\nginx.conf" -Force
-Remove-Item "nginx.zip"
+Remove-Item $NginxZip
+Write-Host "-> nginx extracted and configured at $ScriptDir\nginx" -ForegroundColor Green
+
+$NginxPath = Join-Path $ScriptDir "nginx"
+if (-not ($env:Path.Split(';') -contains $NginxPath)) {
+    $env:Path = "$NginxPath;" + $env:Path
+    Write-Host "Added nginx to PATH for current session: $NginxPath" -ForegroundColor Green
+} else {
+    Write-Host "nginx is already in PATH." -ForegroundColor Gray
+}
+
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")

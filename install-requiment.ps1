@@ -21,45 +21,86 @@ if (Test-Path $VenvActivate) {
     . $VenvActivate
 }
 
+function Invoke-InstallWithUV {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string[]]$Args
+    )
+
+    if ($UseUV) {
+        Write-Host "Installing with uv: $($Args -join ' ')" -ForegroundColor Gray
+        python -m uv @Args
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warning "uv install failed, falling back to python -m pip."
+            $UseUV = $false
+            python -m pip @Args
+        }
+    } else {
+        Write-Host "Installing with python -m pip: $($Args -join ' ')" -ForegroundColor Gray
+        python -m pip @Args
+    }
+}
+
 Write-Host ""
 # ==============================
 # INSTALL CORE
 # ==============================
-Write-Host "Upgrading pip, setuptools, and wheel..." -ForegroundColor Yellow
-python -m pip install --upgrade pip setuptools wheel
+Write-Host "Step 1/6: Installing uv for faster package installs..." -ForegroundColor Yellow
+Write-Host "-> Target: uv" -ForegroundColor Gray
+Invoke-InstallWithUV -Args @("install","uv")
 
-Write-Host "Installing core requirements..." -ForegroundColor Yellow
-$CoreReq = Join-Path $ComfyPath "requirements.txt"
-python -m pip install -r "$CoreReq" --prefer-binary
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "ERROR: Failed to install core requirements."
+    Write-Warning "uv installation failed. Falling back to python -m pip for requirement installs."
+    $UseUV = $false
+} else {
+    python -m uv --version > $null 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        $UseUV = $true
+        Write-Host "-> uv installed and verified." -ForegroundColor Green
+    } else {
+        Write-Warning "uv is not available after install. Falling back to python -m pip."
+        $UseUV = $false
+    }
+}
+
+Write-Host "Step 2/6: Upgrading pip, setuptools, and wheel..." -ForegroundColor Yellow
+Invoke-InstallWithUV -Args @("install","--upgrade","pip","setuptools","wheel")
+Write-Host "-> Upgrade complete." -ForegroundColor Green
+
+Write-Host "Step 3/6: Installing core requirements from $CoreReq..." -ForegroundColor Yellow
+$CoreReq = Join-Path $ComfyPath "requirements.txt"
+Invoke-InstallWithUV -Args @("install","-r",$CoreReq,"--prefer-binary")
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "ERROR: Failed to install core requirements from $CoreReq."
     Read-Host "Press Enter to exit..."
     Exit 1
 }
+Write-Host "-> Core requirements installed successfully." -ForegroundColor Green
 
 Write-Host ""
 # ==============================
 # DOWNLOAD NODES (PHẦN MỚI THÊM VÀO)
 # ==============================
-Write-Host "=== DOWNLOADING CUSTOM NODES ===" -ForegroundColor Cyan
-
+Write-Host "Step 4/6: Downloading custom nodes package..." -ForegroundColor Cyan
 # Tạo thư mục custom_nodes nếu chưa có
 if (!(Test-Path $CustomNodesPath)) { 
     New-Item -ItemType Directory -Path $CustomNodesPath -Force | Out-Null 
+    Write-Host "-> Created custom nodes directory: $CustomNodesPath" -ForegroundColor Gray
 }
 
 # 1. Tải và giải nén file custom_nodes.zip từ Dropbox
 $ZipPath = Join-Path $ComfyPath "custom_nodes.zip"
-Write-Host "-> Downloading custom_nodes.zip..." -ForegroundColor Gray
+Write-Host "-> Downloading custom_nodes.zip to $ZipPath..." -ForegroundColor Gray
 # Keep dl=1 to force direct download
 $DropboxUrl = 'https://www.dropbox.com/scl/fi/ccabj5q3p8go0ht8fkwif/custom_nodes.zip?rlkey=6lh2ok89q00deqm0fgptdv1m7&st=8lx5fxip&dl=1'
 curl.exe -L -o "$ZipPath" $DropboxUrl
 
-Write-Host "-> Extracting custom_nodes.zip..." -ForegroundColor Gray
+Write-Host "-> Extracting custom_nodes.zip into $ComfyPath..." -ForegroundColor Gray
 # Giải nén đè (-Force tương đương với -o trong unzip)
 Expand-Archive -Path $ZipPath -DestinationPath $ComfyPath -Force
 # Xóa file zip sau khi giải nén xong cho sạch máy
 Remove-Item $ZipPath -Force
+Write-Host "-> custom_nodes extracted successfully." -ForegroundColor Green
 
 # 2. Git clone các kho lưu trữ (Kiểm tra nếu chưa có thư mục thì mới clone để tránh báo lỗi)
 $RgthreePath = Join-Path $CustomNodesPath "rgthree-comfy"
@@ -99,34 +140,37 @@ if (Test-Path $CustomNodesPath) {
     }
 }
 
-Write-Host "Installing pip-tools..." -ForegroundColor Yellow
-python -m pip install pip-tools
+Write-Host "Step 5/6: Installing pip-tools..." -ForegroundColor Yellow
+Invoke-InstallWithUV -Args @("install","pip-tools")
 if ($LASTEXITCODE -ne 0) {
     Write-Error "ERROR: Failed to install pip-tools."
     Read-Host "Press Enter to exit..."
     Exit 1
 }
+Write-Host "-> pip-tools installed." -ForegroundColor Green
 
-Write-Host "Compiling custom node requirements to '$FinalReq'..." -ForegroundColor Yellow
+Write-Host "Step 6/6: Compiling custom node requirements from $AllReq to $FinalReq..." -ForegroundColor Yellow
 python -m piptools.pip_compile "$AllReq" -o "$FinalReq" --resolver=backtracking *>$LogFile
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "[!] Compile failed -> fallback to all.txt" -ForegroundColor Yellow
     if (Test-Path $AllReq) {
         Copy-Item $AllReq $FinalReq -Force
+        Write-Host "-> Fallback copied $AllReq to $FinalReq." -ForegroundColor Gray
     }
 } else {
-    Write-Host "[+] Compile success" -ForegroundColor Green
+    Write-Host "[+] Compile success: $FinalReq" -ForegroundColor Green
 }
 
-Write-Host "Installing custom node requirements..." -ForegroundColor Yellow
-python -m pip install -r "$FinalReq" --prefer-binary --upgrade-strategy only-if-needed *>> $LogFile
+Write-Host "Installing custom node requirements from $FinalReq..." -ForegroundColor Yellow
+Invoke-InstallWithUV -Args @("install","-r",$FinalReq,"--prefer-binary","--upgrade-strategy","only-if-needed") *>> $LogFile
 
 if ($LASTEXITCODE -ne 0) {
     Write-Error "ERROR: pip install failed. Check '$LogFile' for details."
     Read-Host "Press Enter to exit..."
     Exit 1
 }
+Write-Host "-> Custom node dependencies installed." -ForegroundColor Green
 
 Write-Host ""
 # ==============================
@@ -142,11 +186,15 @@ Write-Host ""
 # ==============================
 # FIX TORCH
 # ==============================
-Write-Host "Checking/Fixing PyTorch (CUDA 13.0)..." -ForegroundColor Yellow
-python -m pip uninstall torch torchvision torchaudio -y *>$null
-python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
+Write-Host "Checking/Fixing PyTorch for CUDA 13.0..." -ForegroundColor Yellow
+Write-Host "-> Uninstalling existing torch packages..." -ForegroundColor Gray
+Invoke-InstallWithUV -Args @("uninstall","torch","torchvision","torchaudio","-y") *>$null
+Write-Host "-> Installing CUDA 13.0 compatible PyTorch packages..." -ForegroundColor Gray
+Invoke-InstallWithUV -Args @("install","torch","torchvision","torchaudio","--index-url","https://download.pytorch.org/whl/cu130")
 if ($LASTEXITCODE -ne 0) {
     Write-Warning "WARNING: Failed to reinstall torch packages from PyTorch index."
+} else {
+    Write-Host "-> PyTorch CUDA 13.0 packages installed." -ForegroundColor Green
 }
 
 # ==============================
@@ -154,7 +202,6 @@ if ($LASTEXITCODE -ne 0) {
 # ==============================
 Write-Host "Starting ComfyUI in background..." -ForegroundColor Yellow
 
-# Chạy ngầm python, ẩn cửa sổ, xuất log ra file comfy.log và comfy_err.log
 Start-Process -FilePath "python" `
               -ArgumentList "main.py --listen 0.0.0.0 --port 8188" `
               -WorkingDirectory $ComfyPath `
@@ -167,6 +214,11 @@ Start-Process -FilePath "python" `
 # START TUNNEL BACKGROUND
 # ==============================
 Write-Host "Starting Cloudflare Tunnel in background..." -ForegroundColor Yellow
+
+Start-Process -FilePath "nginx" `
+              -WindowStyle Hidden `
+              -RedirectStandardOutput "$ScriptDir\nginx.log" `
+              -RedirectStandardError "$ScriptDir\nginx_err.log"
 
 # Chạy ngầm cloudflared, ẩn cửa sổ, xuất log ra file cf.log và cf_err.log
 Start-Process -FilePath "cloudflared" `
