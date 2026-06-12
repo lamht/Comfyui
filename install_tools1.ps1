@@ -30,8 +30,8 @@ $env:PIP_DEFAULT_TIMEOUT = "60"
 Write-Host "`n[1/4] Downloading Python 3.10 via curl..." -ForegroundColor Yellow
 $PythonInstaller = "$DownloadDir\python_installer.exe"
 
-# Using curl with HTTP/2 and Location redirection flags for speed
-curl -L --http2 -o $PythonInstaller "https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe"
+# Using curl.exe with Location redirection flag for speed
+curl.exe -L -o $PythonInstaller "https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe"
 
 if (Test-Path $PythonInstaller) {
     Write-Host "Installing Python 3.10 silently..." -ForegroundColor Gray
@@ -67,7 +67,7 @@ if (Get-Command pip -ErrorAction SilentlyContinue) {
 Write-Host "`n[3/4] Downloading Cloudflare Tunnel CLI via curl..." -ForegroundColor Yellow
 $CloudflaredInstaller = "$DownloadDir\cloudflared_installer.msi"
 
-curl -L --http2 -o $CloudflaredInstaller "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.msi"
+curl.exe -L -o $CloudflaredInstaller "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.msi"
 
 if (Test-Path $CloudflaredInstaller) {
     Write-Host "Installing Cloudflare Tunnel..." -ForegroundColor Gray
@@ -85,7 +85,7 @@ Write-Host "`n[4/4] Downloading Git via curl..." -ForegroundColor Yellow
 $GitInstaller = "$DownloadDir\git_installer.exe"
 
 # Direct link to the standalone 64-bit installer setup
-curl -L --http2 -o $GitInstaller "https://github.com/git-for-windows/git/releases/download/v2.45.2.windows.1/Git-2.45.2-64-bit.exe"
+curl.exe -L -o $GitInstaller "https://github.com/git-for-windows/git/releases/download/v2.45.2.windows.1/Git-2.45.2-64-bit.exe"
 
 if (Test-Path $GitInstaller) {
     Write-Host "Installing Git silently..." -ForegroundColor Gray
@@ -101,15 +101,11 @@ $ComfyPath = Join-Path $ScriptDir "\Comfyui\ComfyUI"
 $CustomNodesPath = Join-Path $ComfyPath "custom_nodes"
 
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-git clone https://github.com/lamht/Comfyui.git
 
 $nginxVersion = "nginx-1.26.1"
 curl.exe -L -o "nginx.zip" "https://nginx.org/download/$nginxVersion.zip"
 
 Expand-Archive -Path "nginx.zip" -DestinationPath "$ScriptDir\nginx" -Force
 Move-Item -Path "$ScriptDir\nginx\$nginxVersion\*" -Destination "$ScriptDir\nginx" -Force
-Copy-Item -Path "$ScriptDir\Comfyui\nginx-win.conf" -Destination "$ScriptDir\nginx\nginx.conf" -Force
+Copy-Item -Path "$ScriptDir\nginx-win.conf" -Destination "$ScriptDir\nginx\nginx.conf" -Force
 Remove-Item "nginx.zip"
-Start-Process .\nginx.exe -WorkingDirectory "$ScriptDir\nginx" -WindowStyle Hidden
-
-Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File $ScriptDir\Comfyui\hubfacedownload.ps1" -WindowStyle Hidden
