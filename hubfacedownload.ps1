@@ -80,12 +80,15 @@ Write-Host "`n--- DOWNLOADING ADDITIONAL MODELS FROM DROPBOX ---" -ForegroundCol
 # Define the URLs in your current terminal session
 $DropboxUrl1 = 'https://www.dropbox.com/scl/fi/pws3t2zqx6597fuy2darh/pusfix-klein.safetensors?rlkey=3fooobe4nawbn3ttisl50zt9n&st=oj9yimns&dl=1'
 $DropboxUrl2 = 'https://www.dropbox.com/scl/fi/joh1wnos385ynomj49x8e/klein_lora_face1.safetensors?rlkey=xnb5uee5sklpza56pup0jtdt2&st=7sscwh2r&dl=1'
-
+$DropboxUrl3 = 'https://www.dropbox.com/scl/fi/prvqc30iqqgk12e8x5iyw/my_lora_klein_002.safetensors?rlkey=fq0wznag4ufbb38u8pb2zggsj&st=u3q10jwr&dl=0'
 # Download the first model
 curl.exe -L --create-dirs -o "$Base\loras\pusfix-klein.safetensors" $DropboxUrl1
 
 # Download the second model 
 curl.exe -L --create-dirs -o "$Base\loras\klein_lora_face1.safetensors" $DropboxUrl2
+
+# Download the third model
+curl.exe -L --create-dirs -o "$Base\loras\my_lora_klein_002.safetensors" $DropboxUrl3
 
 
 Write-Host "`n[SUCCESS] Download complete!" -ForegroundColor Green
