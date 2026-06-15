@@ -112,7 +112,7 @@ curl.exe -L -o $NginxZip "https://nginx.org/download/$nginxVersion.zip"
 Write-Host "Extracting nginx to $ScriptDir\nginx..." -ForegroundColor Gray
 Expand-Archive -Path $NginxZip -DestinationPath "$ScriptDir\nginx" -Force
 Move-Item -Path "$ScriptDir\nginx\$nginxVersion\*" -Destination "$ScriptDir\nginx" -Force
-Copy-Item -Path "$ScriptDir\nginx-win.conf" -Destination "$ScriptDir\nginx\nginx.conf" -Force
+Copy-Item -Path "$ScriptDir\nginx-win.conf" -Destination "$ScriptDir\nginx\conf\nginx.conf" -Force
 Remove-Item $NginxZip
 Write-Host "-> nginx extracted and configured at $ScriptDir\nginx" -ForegroundColor Green
 

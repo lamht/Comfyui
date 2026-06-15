@@ -21,6 +21,9 @@ if (Test-Path $VenvActivate) {
     . $VenvActivate
 }
 
+# Default to pip until uv is successfully installed and verified.
+$UseUV = $false
+
 function Invoke-InstallWithUV {
     param(
         [Parameter(Mandatory=$true)]
@@ -41,6 +44,12 @@ function Invoke-InstallWithUV {
     }
 }
 
+function Test-UvCli {
+    Write-Host "Checking uv CLI availability..." -ForegroundColor Gray
+    python -m uv --version > $null 2>&1
+    return ($LASTEXITCODE -eq 0)
+}
+
 Write-Host ""
 # ==============================
 # INSTALL CORE
@@ -52,15 +61,17 @@ Invoke-InstallWithUV -Args @("install","uv")
 if ($LASTEXITCODE -ne 0) {
     Write-Warning "uv installation failed. Falling back to python -m pip for requirement installs."
     $UseUV = $false
+} elseif (Test-UvCli) {
+    $UseUV = $true
+    Write-Host "-> uv installed and verified via CLI." -ForegroundColor Green
 } else {
-    python -m uv --version > $null 2>&1
-    if ($LASTEXITCODE -eq 0) {
-        $UseUV = $true
-        Write-Host "-> uv installed and verified." -ForegroundColor Green
-    } else {
-        Write-Warning "uv is not available after install. Falling back to python -m pip."
-        $UseUV = $false
-    }
+    Write-Warning "uv is not available after install. Falling back to python -m pip."
+    $UseUV = $false
+}
+
+# Use python -m pip if uv is not installed or not working.
+if (-not $UseUV) {
+    Write-Host "Note: uv is unavailable; using python -m pip for installs." -ForegroundColor Yellow
 }
 
 Write-Host "Step 2/6: Upgrading pip, setuptools, and wheel..." -ForegroundColor Yellow
