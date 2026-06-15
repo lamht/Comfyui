@@ -2,7 +2,7 @@
 .SYNOPSIS
     Automated script to install Python 3.10, Hugging Face CLI, Cloudflare Tunnel CLI, and Git on Windows.
 .DESCRIPTION
-    This script uses Winget and Pip to install the required tools.
+    This script uses Winget and Pip to install the required tools, including uv.
     Requires Administrator privileges (Run as Administrator).
 #>
 
@@ -51,9 +51,24 @@ $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";"
 Write-Host "PATH refreshed." -ForegroundColor Gray
 
 # ------------------------------------------------------------------------------
-# [2/4] Install Hugging Face CLI using Pip
+# [2/5] Install uv using Pip
 # ------------------------------------------------------------------------------
-Write-Host "`n[2/4] Installing Hugging Face CLI via pip..." -ForegroundColor Yellow
+Write-Host "`n[2/5] Installing uv via pip..." -ForegroundColor Yellow
+if (Get-Command python -ErrorAction SilentlyContinue) {
+    python -m pip install uv --quiet
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "-> uv installed successfully." -ForegroundColor Green
+    } else {
+        Write-Error "Failed to install uv via pip."
+    }
+} else {
+    Write-Error "Python not found. Cannot install uv."
+}
+
+# ----------------------------------------------------------------------------
+# [3/5] Install Hugging Face CLI using Pip
+# ------------------------------------------------------------------------------
+Write-Host "`n[3/5] Installing Hugging Face CLI via pip..." -ForegroundColor Yellow
 if (Get-Command pip -ErrorAction SilentlyContinue) {
     $PipPath = (Get-Command pip).Source
     Write-Host "Detected pip at: $PipPath" -ForegroundColor Gray
@@ -66,9 +81,9 @@ if (Get-Command pip -ErrorAction SilentlyContinue) {
 }
 
 # ------------------------------------------------------------------------------
-# [3/4] Install Cloudflare Tunnel CLI (cloudflared)
+# [4/5] Install Cloudflare Tunnel CLI (cloudflared)
 # ------------------------------------------------------------------------------
-Write-Host "`n[3/4] Downloading Cloudflare Tunnel CLI to $DownloadDir..." -ForegroundColor Yellow
+Write-Host "`n[4/5] Downloading Cloudflare Tunnel CLI to $DownloadDir..." -ForegroundColor Yellow
 $CloudflaredInstaller = "$DownloadDir\cloudflared_installer.msi"
 
 curl.exe -L -o $CloudflaredInstaller "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.msi"
@@ -83,9 +98,9 @@ if (Test-Path $CloudflaredInstaller) {
 }
 
 # ------------------------------------------------------------------------------
-# [4/4] Install Git
+# [5/5] Install Git
 # ------------------------------------------------------------------------------
-Write-Host "`n[4/4] Downloading Git installer to $DownloadDir..." -ForegroundColor Yellow
+Write-Host "`n[5/5] Downloading Git installer to $DownloadDir..." -ForegroundColor Yellow
 $GitInstaller = "$DownloadDir\git_installer.exe"
 
 # Direct link to the standalone 64-bit installer setup

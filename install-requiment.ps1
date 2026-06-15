@@ -226,10 +226,20 @@ Start-Process -FilePath "python" `
 # ==============================
 Write-Host "Starting Cloudflare Tunnel in background..." -ForegroundColor Yellow
 
-Start-Process -FilePath "nginx" `
-              -WindowStyle Hidden `
-              -RedirectStandardOutput "$ScriptDir\nginx.log" `
-              -RedirectStandardError "$ScriptDir\nginx_err.log"
+$NginxExe = Join-Path $ScriptDir "nginx\nginx.exe"
+if (Test-Path $NginxExe) {
+    Start-Process -FilePath $NginxExe `
+                  -WorkingDirectory (Join-Path $ScriptDir "nginx") `
+                  -WindowStyle Hidden `
+                  -RedirectStandardOutput "$ScriptDir\nginx.log" `
+                  -RedirectStandardError "$ScriptDir\nginx_err.log"
+} else {
+    Write-Warning "nginx executable not found at $NginxExe. Falling back to system nginx in PATH."
+    Start-Process -FilePath "nginx" `
+                  -WindowStyle Hidden `
+                  -RedirectStandardOutput "$ScriptDir\nginx.log" `
+                  -RedirectStandardError "$ScriptDir\nginx_err.log"
+}
 
 # Chạy ngầm cloudflared, ẩn cửa sổ, xuất log ra file cf.log và cf_err.log
 Start-Process -FilePath "cloudflared" `
