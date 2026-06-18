@@ -75,17 +75,38 @@ hf_download_if_missing "$BASE/loras/flux-female-anatomy.safetensors" uriel353/fl
 hf_download_if_missing "$BASE/loras/bfs_head_v1_flux-klein_9b_step3500_rank128.safetensors" Alissonerdx/BFS-Best-Face-Swap bfs_head_v1_flux-klein_9b_step3500_rank128.safetensors --local-dir $BASE/loras
 
 hf_download_if_missing "$BASE/loras/comfyui_portrait_lora64.safetensors" ali-vilab/ACE_Plus portrait/comfyui_portrait_lora64.safetensors --local-dir $BASE/loras
-mv $BASE/loras/portrait/comfyui_portrait_lora64.safetensors $BASE/loras/comfyui_portrait_lora64.safetensors
+src="$BASE/loras/portrait/comfyui_portrait_lora64.safetensors"
+dst="$BASE/loras/comfyui_portrait_lora64.safetensors"
+if [ -f "$src" ]; then
+  mkdir -p "$(dirname "$dst")"
+  mv "$src" "$dst"
+else
+  echo "[SKIP] $src missing, not moving"
+fi
 
 hf_download_if_missing "$BASE/loras/comfyui_subject_lora16.safetensors" ali-vilab/ACE_Plus subject/comfyui_subject_lora16.safetensors --local-dir $BASE/loras
-mv $BASE/loras/subject/comfyui_subject_lora16.safetensors $BASE/loras/comfyui_subject_lora16.safetensors
+src="$BASE/loras/subject/comfyui_subject_lora16.safetensors"
+dst="$BASE/loras/comfyui_subject_lora16.safetensors"
+if [ -f "$src" ]; then
+  mkdir -p "$(dirname "$dst")"
+  mv "$src" "$dst"
+else
+  echo "[SKIP] $src missing, not moving"
+fi
 
 #https://huggingface.co/dx8152/Flux2-Klein-9B-Consistency/blob/main/Klein-consistency.safetensors
 hf_download_if_missing "$BASE/loras/Klein-consistency.safetensors" dx8152/Flux2-Klein-9B-Consistency Klein-consistency.safetensors --local-dir $BASE/loras
 
 #https://huggingface.co/gmp-dev/gmp-lora/blob/1786940ba90ccc3509970d1cb3541b2fccfd3de7/Lora/Likeness/realisticVaginasGod_sdVSGp1S.safetensors
 hf_download_if_missing "$BASE/loras/realisticVaginasGod_sdVSGp1S.safetensors" gmp-dev/gmp-lora Lora/Likeness/realisticVaginasGod_sdVSGp1S.safetensors --local-dir $BASE/loras
-mv $BASE/loras/Lora/Likeness/realisticVaginasGod_sdVSGp1S.safetensors $BASE/loras/realisticVaginasGod_sdVSGp1S.safetensors
+src="$BASE/loras/Lora/Likeness/realisticVaginasGod_sdVSGp1S.safetensors"
+dst="$BASE/loras/realisticVaginasGod_sdVSGp1S.safetensors"
+if [ -f "$src" ]; then
+  mkdir -p "$(dirname "$dst")"
+  mv "$src" "$dst"
+else
+  echo "[SKIP] $src missing, not moving"
+fi
 
 # hf download fal/FLUX.2-dev-Turbo \
 # flux.2-turbo-lora.safetensors \
@@ -116,7 +137,14 @@ hf_download_if_missing "$BASE/diffusion_models/flux-2-klein-9b-fp8.safetensors" 
 # ==============================
 # DOWNLOAD CLIP
 hf_download_if_missing "$BASE/clip/qwen_3_8b_fp8mixed.safetensors" Comfy-Org/vae-text-encorder-for-flux-klein-9b split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors --local-dir $BASE/clip
-mv $BASE/clip/split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors $BASE/clip/qwen_3_8b_fp8mixed.safetensors
+src="$BASE/clip/split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors"
+dst="$BASE/clip/qwen_3_8b_fp8mixed.safetensors"
+if [ -f "$src" ]; then
+  mkdir -p "$(dirname "$dst")"
+  mv "$src" "$dst"
+else
+  echo "[SKIP] $src missing, not moving"
+fi
 
 #https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors?download=true
 # hf download comfyanonymous/flux_text_encoders \
@@ -133,7 +161,14 @@ mv $BASE/clip/split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors $BASE/cli
 # ==============================
 # DOWNLOAD VAE
 hf_download_if_missing "$BASE/vae/flux2-vae.safetensors" Comfy-Org/vae-text-encorder-for-flux-klein-9b split_files/vae/flux2-vae.safetensors --local-dir $BASE/vae
-mv $BASE/vae/split_files/vae/flux2-vae.safetensors $BASE/vae/flux2-vae.safetensors
+src="$BASE/vae/split_files/vae/flux2-vae.safetensors"
+dst="$BASE/vae/flux2-vae.safetensors"
+if [ -f "$src" ]; then
+  mkdir -p "$(dirname "$dst")"
+  mv "$src" "$dst"
+else
+  echo "[SKIP] $src missing, not moving"
+fi
 
 #https://huggingface.co/lovis93/testllm/resolve/ed9cf1af7465cebca4649157f118e331cf2a084f/ae.safetensors?download=true
 # hf download lovis93/testllm \
