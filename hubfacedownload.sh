@@ -35,6 +35,8 @@ export BASE="$(dirname "$0")/ComfyUI/models"
 
 mkdir -p $BASE/{loras,checkpoints,clip,vae}
 
+rm -rf /root/Comfyui/ComfyUI/models/diffusion_models/.cache/huggingface/download/*
+
 # Helper: download with existence check for `hf download`
 hf_download_if_missing() {
   dest="$1"
