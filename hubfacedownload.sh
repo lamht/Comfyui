@@ -17,6 +17,7 @@ export PATH="/root/.local/bin:$PATH"
 
 # tăng tốc download
 export HF_HUB_ENABLE_HF_TRANSFER=1 
+export HF_XET_HIGH_PERFORMANCE=1
 
 # ==============================
 # LOGIN
