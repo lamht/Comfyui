@@ -27,30 +27,30 @@ $env:HF_HUB_ENABLE_HF_TRANSFER = "1"
 # ==============================
 Write-Host "`n--- DOWNLOADING LORAS ---" -ForegroundColor Cyan
 
-hf download Aitrepreneur/FLX scg-anatomy-female-v2.safetensors --local-dir "$Base\loras"
-hf download uriel353/flux-female-anatomy flux-female-anatomy.safetensors --local-dir "$Base\loras"
+# hf download Aitrepreneur/FLX scg-anatomy-female-v2.safetensors --local-dir "$Base\loras"
+# hf download uriel353/flux-female-anatomy flux-female-anatomy.safetensors --local-dir "$Base\loras"
 
 # ==============================
 # DOWNLOAD LORA (FACE SWAP)
 # ==============================
 hf download Alissonerdx/BFS-Best-Face-Swap bfs_head_v1_flux-klein_9b_step3500_rank128.safetensors --local-dir "$Base\loras"
 
-hf download ali-vilab/ACE_Plus portrait/comfyui_portrait_lora64.safetensors --local-dir "$Base\loras"
-if (Test-Path "$Base\loras\portrait\comfyui_portrait_lora64.safetensors") {
-    Move-Item -Path "$Base\loras\portrait\comfyui_portrait_lora64.safetensors" -Destination "$Base\loras\" -Force
-}
+# hf download ali-vilab/ACE_Plus portrait/comfyui_portrait_lora64.safetensors --local-dir "$Base\loras"
+# if (Test-Path "$Base\loras\portrait\comfyui_portrait_lora64.safetensors") {
+#     Move-Item -Path "$Base\loras\portrait\comfyui_portrait_lora64.safetensors" -Destination "$Base\loras\" -Force
+# }
 
-hf download ali-vilab/ACE_Plus subject/comfyui_subject_lora16.safetensors --local-dir "$Base\loras"
-if (Test-Path "$Base\loras\subject\comfyui_subject_lora16.safetensors") {
-    Move-Item -Path "$Base\loras\subject\comfyui_subject_lora16.safetensors" -Destination "$Base\loras\" -Force
-}
+# hf download ali-vilab/ACE_Plus subject/comfyui_subject_lora16.safetensors --local-dir "$Base\loras"
+# if (Test-Path "$Base\loras\subject\comfyui_subject_lora16.safetensors") {
+#     Move-Item -Path "$Base\loras\subject\comfyui_subject_lora16.safetensors" -Destination "$Base\loras\" -Force
+# }
 
 hf download dx8152/Flux2-Klein-9B-Consistency Klein-consistency.safetensors --local-dir "$Base\loras"
 
-hf download gmp-dev/gmp-lora Lora/Likeness/realisticVaginasGod_sdVSGp1S.safetensors --local-dir "$Base\loras"
-if (Test-Path "$Base\loras\Lora\Likeness\realisticVaginasGod_sdVSGp1S.safetensors") {
-    Move-Item -Path "$Base\loras\Lora\Likeness\realisticVaginasGod_sdVSGp1S.safetensors" -Destination "$Base\loras\" -Force
-}
+# hf download gmp-dev/gmp-lora Lora/Likeness/realisticVaginasGod_sdVSGp1S.safetensors --local-dir "$Base\loras"
+# if (Test-Path "$Base\loras\Lora\Likeness\realisticVaginasGod_sdVSGp1S.safetensors") {
+#     Move-Item -Path "$Base\loras\Lora\Likeness\realisticVaginasGod_sdVSGp1S.safetensors" -Destination "$Base\loras\" -Force
+# }
 
 # ==============================
 # DOWNLOAD CHECKPOINT

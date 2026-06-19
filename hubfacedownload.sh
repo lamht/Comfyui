@@ -44,10 +44,10 @@ rm -rf /root/Comfyui/ComfyUI/models/diffusion_models/.cache/huggingface/download
 # DOWNLOAD LORA
 # ==============================
 #https://huggingface.co/Aitrepreneur/FLX/blob/main/scg-anatomy-female-v2.safetensors
-hf download Aitrepreneur/FLX scg-anatomy-female-v2.safetensors --local-dir $BASE/loras
+# hf download Aitrepreneur/FLX scg-anatomy-female-v2.safetensors --local-dir $BASE/loras
 
 #https://huggingface.co/uriel353/flux-female-anatomy/resolve/main/flux-female-anatomy.safetensors?download=true
-hf download uriel353/flux-female-anatomy flux-female-anatomy.safetensors --local-dir $BASE/loras
+# hf download uriel353/flux-female-anatomy flux-female-anatomy.safetensors --local-dir $BASE/loras
 # v4g1n4, n4k3d
 
 # ==============================
@@ -56,27 +56,27 @@ hf download uriel353/flux-female-anatomy flux-female-anatomy.safetensors --local
 hf download Alissonerdx/BFS-Best-Face-Swap bfs_head_v1_flux-klein_9b_step3500_rank128.safetensors --local-dir $BASE/loras
 
 hf download ali-vilab/ACE_Plus portrait/comfyui_portrait_lora64.safetensors --local-dir $BASE/loras
-src="$BASE/loras/portrait/comfyui_portrait_lora64.safetensors"
-dst="$BASE/loras/comfyui_portrait_lora64.safetensors"
-if [ -f "$src" ]; then
-  mkdir -p "$(dirname "$dst")"
-  mv "$src" "$dst"
-else
-  echo "[SKIP] $src missing, not moving"
-fi
+# src="$BASE/loras/portrait/comfyui_portrait_lora64.safetensors"
+# dst="$BASE/loras/comfyui_portrait_lora64.safetensors"
+# if [ -f "$src" ]; then
+#   mkdir -p "$(dirname "$dst")"
+#   mv "$src" "$dst"
+# else
+#   echo "[SKIP] $src missing, not moving"
+# fi
 
-hf download ali-vilab/ACE_Plus subject/comfyui_subject_lora16.safetensors --local-dir $BASE/loras
-src="$BASE/loras/subject/comfyui_subject_lora16.safetensors"
-dst="$BASE/loras/comfyui_subject_lora16.safetensors"
-if [ -f "$src" ]; then
-  mkdir -p "$(dirname "$dst")"
-  mv "$src" "$dst"
-else
-  echo "[SKIP] $src missing, not moving"
-fi
+# hf download ali-vilab/ACE_Plus subject/comfyui_subject_lora16.safetensors --local-dir $BASE/loras
+# src="$BASE/loras/subject/comfyui_subject_lora16.safetensors"
+# dst="$BASE/loras/comfyui_subject_lora16.safetensors"
+# if [ -f "$src" ]; then
+#   mkdir -p "$(dirname "$dst")"
+#   mv "$src" "$dst"
+# else
+#   echo "[SKIP] $src missing, not moving"
+# fi
 
 #https://huggingface.co/dx8152/Flux2-Klein-9B-Consistency/blob/main/Klein-consistency.safetensors
-hf download dx8152/Flux2-Klein-9B-Consistency Klein-consistency.safetensors --local-dir $BASE/loras
+# hf download dx8152/Flux2-Klein-9B-Consistency Klein-consistency.safetensors --local-dir $BASE/loras
 
 #https://huggingface.co/gmp-dev/gmp-lora/blob/1786940ba90ccc3509970d1cb3541b2fccfd3de7/Lora/Likeness/realisticVaginasGod_sdVSGp1S.safetensors
 # hf_download_if_missing "$BASE/loras/realisticVaginasGod_sdVSGp1S.safetensors" gmp-dev/gmp-lora Lora/Likeness/realisticVaginasGod_sdVSGp1S.safetensors --local-dir $BASE/loras
@@ -157,4 +157,10 @@ wget -O "$BASE/loras/klein_lora_face1.safetensors" "https://www.dropbox.com/scl/
 
 # https://www.dropbox.com/scl/fi/prvqc30iqqgk12e8x5iyw/my_lora_klein_002.safetensors?rlkey=fq0wznag4ufbb38u8pb2zggsj&st=u3q10jwr&dl=0
 wget -O "$BASE/loras/my_lora_klein_002.safetensors" "https://www.dropbox.com/scl/fi/prvqc30iqqgk12e8x5iyw/my_lora_klein_002.safetensors?rlkey=fq0wznag4ufbb38u8pb2zggsj&st=u3q10jwr&dl=1"
+
+# https://www.dropbox.com/scl/fi/lew172dl9zaygl17wgvqv/my_lora_klein_004_000000300.safetensors?rlkey=0hbw51g0j3kjcvgjxecag4oc6&st=7zu7mowi&dl=0
+wget -O "$BASE/loras/my_lora_klein_004_000000300.safetensors" "https://www.dropbox.com/scl/fi/lew172dl9zaygl17wgvqv/my_lora_klein_004_000000300.safetensors?rlkey=0hbw51g0j3kjcvgjxecag4oc6&st=7zu7mowi&dl=1"
+
+# https://www.dropbox.com/scl/fi/vftvcrsdkv2w0gru8rg0e/mylora_klein_003_000001250.safetensors?rlkey=i4pv7muazvsyuu95xqucmryhi&st=zltv03vi&dl=0
+wget -O "$BASE/loras/mylora_klein_003_000001250.safetensors" "https://www.dropbox.com/scl/fi/vftvcrsdkv2w0gru8rg0e/mylora_klein_003_000001250.safetensors?rlkey=i4pv7muazvsyuu95xqucmryhi&st=zltv03vi&dl=1"
 echo "✅ Download complete!"
