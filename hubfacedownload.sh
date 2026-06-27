@@ -149,9 +149,6 @@ fi
 # ==============================
 # DOWNLOAD ADDITIONAL MODELS
 # ==============================
-# https://www.dropbox.com/scl/fi/pws3t2zqx6597fuy2darh/pusfix-klein.safetensors?rlkey=3fooobe4nawbn3ttisl50zt9n&st=oj9yimns&dl=0
-wget -O "$BASE/loras/pusfix-klein.safetensors" "https://www.dropbox.com/scl/fi/pws3t2zqx6597fuy2darh/pusfix-klein.safetensors?rlkey=3fooobe4nawbn3ttisl50zt9n&st=oj9yimns&dl=1"
-
 # https://www.dropbox.com/scl/fi/joh1wnos385ynomj49x8e/klein_lora_face1.safetensors?rlkey=xnb5uee5sklpza56pup0jtdt2&st=7sscwh2r&dl=0
 wget -O "$BASE/loras/klein_lora_face1.safetensors" "https://www.dropbox.com/scl/fi/joh1wnos385ynomj49x8e/klein_lora_face1.safetensors?rlkey=xnb5uee5sklpza56pup0jtdt2&st=7sscwh2r&dl=1"
 
@@ -163,4 +160,11 @@ wget -O "$BASE/loras/my_lora_klein_004_000000300.safetensors" "https://www.dropb
 
 # https://www.dropbox.com/scl/fi/vftvcrsdkv2w0gru8rg0e/mylora_klein_003_000001250.safetensors?rlkey=i4pv7muazvsyuu95xqucmryhi&st=zltv03vi&dl=0
 wget -O "$BASE/loras/mylora_klein_003_000001250.safetensors" "https://www.dropbox.com/scl/fi/vftvcrsdkv2w0gru8rg0e/mylora_klein_003_000001250.safetensors?rlkey=i4pv7muazvsyuu95xqucmryhi&st=zltv03vi&dl=1"
+
+# https://www.dropbox.com/scl/fi/6nvl483ugp9mwlllg2w04/my_lora_klein_004_v2_000001250.safetensors?rlkey=42r12ptupfdghehsw0t2o00xz&st=tp2ldcew&dl=0
+wget -O "$BASE/loras/my_lora_klein_004_v2_000001250.safetensors" "https://www.dropbox.com/scl/fi/6nvl483ugp9mwlllg2w04/my_lora_klein_004_v2_000001250.safetensors?rlkey=42r12ptupfdghehsw0t2o00xz&st=tp2ldcew&dl=1"
+
+# https://www.dropbox.com/scl/fi/0x1g6j7q3k5v8y4x9z0b/my_lora_klein_004_v2_000001500.safetensors?rlkey=42r12ptupfdghehsw0t2o00xz&st=tp2ldcew&dl=0
+wget -O "$BASE/loras/my_lora_klein_004_v2_000001500.safetensors" "https://www.dropbox.com/scl/fi/0x1g6j7q3k5v8y4x9z0b/my_lora_klein_004_v2_000001500.safetensors?rlkey=42r12ptupfdghehsw0t2o00xz&st=tp2ldcew&dl=1"
+
 echo "✅ Download complete!"
