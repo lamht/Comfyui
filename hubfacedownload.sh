@@ -155,6 +155,9 @@ wget -O "$BASE/loras/klein_lora_face1.safetensors" "https://www.dropbox.com/scl/
 # https://www.dropbox.com/scl/fi/prvqc30iqqgk12e8x5iyw/my_lora_klein_002.safetensors?rlkey=fq0wznag4ufbb38u8pb2zggsj&st=u3q10jwr&dl=0
 wget -O "$BASE/loras/my_lora_klein_002.safetensors" "https://www.dropbox.com/scl/fi/prvqc30iqqgk12e8x5iyw/my_lora_klein_002.safetensors?rlkey=fq0wznag4ufbb38u8pb2zggsj&st=u3q10jwr&dl=1"
 
+#https://www.dropbox.com/scl/fi/pox80ulg1hbl8i992ssi5/my_lora_klein_002_v2.safetensors?rlkey=hvc8leq26qnuubh5dcxzvfrev&st=4ylrlte4&dl=0
+wget -O "$BASE/loras/my_lora_klein_002_v2.safetensors" "https://www.dropbox.com/scl/fi/pox80ulg1hbl8i992ssi5/my_lora_klein_002_v2.safetensors?rlkey=hvc8leq26qnuubh5dcxzvfrev&st=4ylrlte4&dl=1"
+
 # https://www.dropbox.com/scl/fi/lew172dl9zaygl17wgvqv/my_lora_klein_004_000000300.safetensors?rlkey=0hbw51g0j3kjcvgjxecag4oc6&st=7zu7mowi&dl=0
 wget -O "$BASE/loras/my_lora_klein_004_000000300.safetensors" "https://www.dropbox.com/scl/fi/lew172dl9zaygl17wgvqv/my_lora_klein_004_000000300.safetensors?rlkey=0hbw51g0j3kjcvgjxecag4oc6&st=7zu7mowi&dl=1"
 
