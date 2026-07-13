@@ -24,7 +24,7 @@ echo "Using ComfyUI at: $COMFY_PATH"
 wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && \
 sudo dpkg -i cloudflared-linux-amd64.deb && \
 sudo apt update && \
-sudo apt install -y curl gnupg2 ca-certificates lsb-release ubuntu-keyring && \
+sudo apt install -y curl gnupg2 ca-certificates lsb-release ubuntu-keyring build-essential libgl1-mesa-glx libglib2.0-0 python3-dev && \
 curl -fsSL https://nginx.org/keys/nginx_signing.key | gpg --dearmor \
 | sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null && \
 echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
