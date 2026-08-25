@@ -56,6 +56,9 @@ rm -rf /root/Comfyui/ComfyUI/models/diffusion_models/.cache/huggingface/download
 hf download Alissonerdx/BFS-Best-Face-Swap bfs_head_v1_flux-klein_9b_step3500_rank128.safetensors --local-dir $BASE/loras
 
 hf download ali-vilab/ACE_Plus portrait/comfyui_portrait_lora64.safetensors --local-dir $BASE/loras
+
+hf download SOLRICKS/Flux2-Klein-9B-Realistic-Detail Flux2%20Klein%209B%20Realistic%20Detail%20LoRA_000001000.safetensors --local-dir $BASE/loras
+
 # src="$BASE/loras/portrait/comfyui_portrait_lora64.safetensors"
 # dst="$BASE/loras/comfyui_portrait_lora64.safetensors"
 # if [ -f "$src" ]; then
@@ -170,4 +173,6 @@ wget -O "$BASE/loras/my_lora_klein_004_v2_000001250.safetensors" "https://www.dr
 # https://www.dropbox.com/scl/fi/0x1g6j7q3k5v8y4x9z0b/my_lora_klein_004_v2_000001500.safetensors?rlkey=42r12ptupfdghehsw0t2o00xz&st=tp2ldcew&dl=0
 wget -O "$BASE/loras/my_lora_klein_004_v2_000001500.safetensors" "https://www.dropbox.com/scl/fi/0x1g6j7q3k5v8y4x9z0b/my_lora_klein_004_v2_000001500.safetensors?rlkey=42r12ptupfdghehsw0t2o00xz&st=tp2ldcew&dl=1"
 
+# https://www.dropbox.com/scl/fi/yncraovi7yzrlcdparsbf/flux2_lora005.safetensors?rlkey=ad7mynauat1f51r0e0u296h2u&st=v0hovn0e&dl=0
+wget -O "$BASE/loras/flux2_lora005.safetensors" "https://www.dropbox.com/scl/fi/yncraovi7yzrlcdparsbf/flux2_lora005.safetensors?rlkey=ad7mynauat1f51r0e0u296h2u&st=v0hovn0e&dl=1"
 echo "✅ Download complete!"
