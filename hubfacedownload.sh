@@ -175,4 +175,7 @@ wget -O "$BASE/loras/my_lora_klein_004_v2_000001500.safetensors" "https://www.dr
 
 # https://www.dropbox.com/scl/fi/yncraovi7yzrlcdparsbf/flux2_lora005.safetensors?rlkey=ad7mynauat1f51r0e0u296h2u&st=v0hovn0e&dl=0
 wget -O "$BASE/loras/flux2_lora005.safetensors" "https://www.dropbox.com/scl/fi/yncraovi7yzrlcdparsbf/flux2_lora005.safetensors?rlkey=ad7mynauat1f51r0e0u296h2u&st=v0hovn0e&dl=1"
+
+#https://www.dropbox.com/scl/fi/p8710w6fydmj9023v1ui3/realistic.safetensors?rlkey=jvq2qylwuyxbjqkqnwa8ukiux&st=ykpssn2f&dl=0
+wget -O "$BASE/loras/realistic.safetensors" "https://www.dropbox.com/scl/fi/p8710w6fydmj9023v1ui3/realistic.safetensors?rlkey=jvq2qylwuyxbjqkqnwa8ukiux&st=ykpssn2f&dl=1"
 echo "✅ Download complete!"
