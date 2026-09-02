@@ -51,11 +51,13 @@ git clone https://github.com/ltdrdata/ComfyUI-Manager "$COMFY_PATH/custom_nodes/
 git clone https://github.com/crystian/ComfyUI-Crystools.git "$COMFY_PATH/custom_nodes/ComfyUI-Crystools" || true
 
 # ==============================
-# ACTIVATE VENV
+# ACTIVATE OR CREATE VENV
 # ==============================
-if [ -d "$COMFY_PATH/venv" ]; then
-  source "$COMFY_PATH/venv/bin/activate"
+if [ ! -d "$COMFY_PATH/venv" ]; then
+  echo "[+] Creating virtual environment..."
+  python3 -m venv "$COMFY_PATH/venv"
 fi
+source "$COMFY_PATH/venv/bin/activate"
 
 # ==============================
 # INSTALL REQUIREMENTS (SYNC)
