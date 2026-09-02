@@ -57,7 +57,6 @@ hf download Alissonerdx/BFS-Best-Face-Swap bfs_head_v1_flux-klein_9b_step3500_ra
 
 hf download ali-vilab/ACE_Plus portrait/comfyui_portrait_lora64.safetensors --local-dir $BASE/loras
 
-hf download SOLRICKS/Flux2-Klein-9B-Realistic-Detail Flux2%20Klein%209B%20Realistic%20Detail%20LoRA_000001000.safetensors --local-dir $BASE/loras
 
 # src="$BASE/loras/portrait/comfyui_portrait_lora64.safetensors"
 # dst="$BASE/loras/comfyui_portrait_lora64.safetensors"
