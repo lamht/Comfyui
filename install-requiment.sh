@@ -24,7 +24,7 @@ echo "Using ComfyUI at: $COMFY_PATH"
 wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && \
 sudo dpkg -i cloudflared-linux-amd64.deb && \
 sudo apt update && \
-sudo apt install -y curl gnupg2 ca-certificates lsb-release ubuntu-keyring build-essential libgl1-mesa-glx libglib2.0-0 python3-dev && \
+sudo apt install -y curl gnupg2 ca-certificates lsb-release ubuntu-keyring build-essential libgl1-mesa-glx libglib2.0-0 python3-dev python3-venv && \
 curl -fsSL https://nginx.org/keys/nginx_signing.key | gpg --dearmor \
 | sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null && \
 echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
@@ -51,12 +51,22 @@ git clone https://github.com/ltdrdata/ComfyUI-Manager "$COMFY_PATH/custom_nodes/
 git clone https://github.com/crystian/ComfyUI-Crystools.git "$COMFY_PATH/custom_nodes/ComfyUI-Crystools" || true
 
 # ==============================
-# ACTIVATE OR CREATE VENV
+# CHECK PYTHON & CREATE/ACTIVATE VENV
 # ==============================
-if [ ! -d "$COMFY_PATH/venv" ]; then
-  echo "[+] Creating virtual environment..."
-  python3 -m venv "$COMFY_PATH/venv"
+if ! command -v python3 &> /dev/null; then
+    echo "ERROR: python3 is not installed. Please install it first."
+    exit 1
 fi
+
+if [ ! -d "$COMFY_PATH/venv" ]; then
+    echo "[+] Creating virtual environment..."
+    python3 -m venv "$COMFY_PATH/venv" || {
+        echo "ERROR: Failed to create virtual environment. Ensure python3-venv is installed."
+        exit 1
+    }
+fi
+
+echo "[+] Activating virtual environment..."
 source "$COMFY_PATH/venv/bin/activate"
 
 # ==============================
