@@ -45,10 +45,12 @@ unzip -o custom_nodes.zip -d "$COMFY_PATH"
 rm -rf "$COMFY_PATH/custom_nodes/rgthree-comfy" || true
 rm -rf "$COMFY_PATH/custom_nodes/ComfyUI-Crystools" || true
 rm -rf "$COMFY_PATH/custom_nodes/comfyui-manager" || true
+rm -rf "$COMFY_PATH/custom_nodes/ComfyUI-Inpaint-CropAndStitch" || true
 
 git clone https://github.com/rgthree/rgthree-comfy.git "$COMFY_PATH/custom_nodes/rgthree-comfy" || true
 git clone https://github.com/ltdrdata/ComfyUI-Manager "$COMFY_PATH/custom_nodes/comfyui-manager" || true
 git clone https://github.com/crystian/ComfyUI-Crystools.git "$COMFY_PATH/custom_nodes/ComfyUI-Crystools" || true
+git clone https://github.com/lquesada/ComfyUI-Inpaint-CropAndStitch.git "$COMFY_PATH/custom_nodes/ComfyUI-Inpaint-CropAndStitch" || true
 
 # ==============================
 # CHECK PYTHON & CREATE/ACTIVATE VENV
