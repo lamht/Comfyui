@@ -46,6 +46,7 @@ rm -rf "$COMFY_PATH/custom_nodes/rgthree-comfy" || true
 rm -rf "$COMFY_PATH/custom_nodes/ComfyUI-Crystools" || true
 rm -rf "$COMFY_PATH/custom_nodes/comfyui-manager" || true
 rm -rf "$COMFY_PATH/custom_nodes/ComfyUI-Inpaint-CropAndStitch" || true
+rm -rf "$COMFY_PATH/custom_nodes/ComfyUI-Dwpose-Tensorrt" || true
 
 git config --global http.version HTTP/1.1
 git config --global http.lowSpeedLimit 1000
@@ -53,10 +54,10 @@ git config --global http.lowSpeedTime 30
 git config --global core.compression 0
 
 git clone --depth 1 https://github.com/rgthree/rgthree-comfy.git "$COMFY_PATH/custom_nodes/rgthree-comfy" || true
-git clone --depth 1 https://github.com/ltdrdata/ComfyUI-Manager "$COMFY_PATH/custom_nodes/comfyui-manager" || true
+git clone --depth 1 https://github.com/ltdrdata/ComfyUI-Manager.git "$COMFY_PATH/custom_nodes/comfyui-manager" || true
 git clone --depth 1 https://github.com/crystian/ComfyUI-Crystools.git "$COMFY_PATH/custom_nodes/ComfyUI-Crystools" || true
 git clone --depth 1 https://github.com/lquesada/ComfyUI-Inpaint-CropAndStitch.git "$COMFY_PATH/custom_nodes/ComfyUI-Inpaint-CropAndStitch" || true
-
+git clone --depth 1 https://github.com/yuvraj108c/ComfyUI-Dwpose-Tensorrt.git "$COMFY_PATH/custom_nodes/ComfyUI-Dwpose-Tensorrt" || true
 # ==============================
 # CHECK PYTHON & CREATE/ACTIVATE VENV
 # ==============================
