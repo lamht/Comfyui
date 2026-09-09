@@ -39,14 +39,15 @@ sudo service nginx restart &
 # ==============================
 # DOWNLOAD NODES
 # ==============================
-wget -O custom_nodes.zip "https://www.dropbox.com/scl/fi/ccabj5q3p8go0ht8fkwif/custom_nodes.zip?rlkey=6lh2ok89q00deqm0fgptdv1m7&st=8lx5fxip&dl=0"
-unzip -o custom_nodes.zip -d "$COMFY_PATH"
+# wget -O custom_nodes.zip "https://www.dropbox.com/scl/fi/ccabj5q3p8go0ht8fkwif/custom_nodes.zip?rlkey=6lh2ok89q00deqm0fgptdv1m7&st=8lx5fxip&dl=0"
+# unzip -o custom_nodes.zip -d "$COMFY_PATH"
 
 rm -rf "$COMFY_PATH/custom_nodes/rgthree-comfy" || true
 rm -rf "$COMFY_PATH/custom_nodes/ComfyUI-Crystools" || true
 rm -rf "$COMFY_PATH/custom_nodes/comfyui-manager" || true
 rm -rf "$COMFY_PATH/custom_nodes/ComfyUI-Inpaint-CropAndStitch" || true
 rm -rf "$COMFY_PATH/custom_nodes/ComfyUI-Dwpose-Tensorrt" || true
+rm -rf "$COMFY_PATH/custom_nodes/batch_image_loader" || true
 
 git config --global http.version HTTP/1.1
 git config --global http.lowSpeedLimit 1000
@@ -58,6 +59,7 @@ git clone --depth 1 https://github.com/ltdrdata/ComfyUI-Manager.git "$COMFY_PATH
 git clone --depth 1 https://github.com/crystian/ComfyUI-Crystools.git "$COMFY_PATH/custom_nodes/ComfyUI-Crystools" || true
 git clone --depth 1 https://github.com/lquesada/ComfyUI-Inpaint-CropAndStitch.git "$COMFY_PATH/custom_nodes/ComfyUI-Inpaint-CropAndStitch" || true
 git clone --depth 1 https://github.com/yuvraj108c/ComfyUI-Dwpose-Tensorrt.git "$COMFY_PATH/custom_nodes/ComfyUI-Dwpose-Tensorrt" || true
+git clone --depth 1 https://github.com/orion4d/batch_image_loader.git "$COMFY_PATH/custom_nodes/batch_image_loader" || true
 # ==============================
 # CHECK PYTHON & CREATE/ACTIVATE VENV
 # ==============================
