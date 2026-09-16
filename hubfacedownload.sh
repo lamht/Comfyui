@@ -32,7 +32,7 @@ fi
 # ==============================
 export BASE="$(dirname "$0")/ComfyUI/models"
 
-mkdir -p $BASE/{loras,checkpoints,clip,vae}
+mkdir -p $BASE/{loras,checkpoints,clip,vae,upscale_models,facerestore_models}
 
 rm -rf /root/Comfyui/ComfyUI/models/diffusion_models/.cache/huggingface/download/*
 
@@ -146,6 +146,15 @@ fi
 # hf download lovis93/testllm \
 #   ae.safetensors \
 #   --local-dir $BASE/vae
+
+# 4x UltraSharp
+hf download Kim2091/UltraSharp \
+  4x-UltraSharp.pth \
+  --local-dir "$BASE/upscale_models"
+
+# CodeFormer
+wget -O "$BASE/facerestore_models/codeformer.pth" \
+  "https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth"
 
 # ==============================
 # DOWNLOAD ADDITIONAL MODELS
