@@ -63,5 +63,4 @@ pip install -r "$FINAL_REQ" \
 # ==============================
 # START COMFYUI
 # ==============================
-cd "$COMFY_PATH"
-nohup python3 main.py --listen 0.0.0.0 --port 8188 > $SCRIPT_DIR/comfy.log 2>&1 &
+nohup $COMFY_PATH/python3 main.py --listen 0.0.0.0 --port 8188 > $SCRIPT_DIR/comfy.log 2>&1 &
