@@ -1,66 +1,115 @@
+#!/usr/bin/env bash
+
 # ==============================
 # SCRIPT PATHS
 # ==============================
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 export COMFY_PATH="$SCRIPT_DIR/ComfyUI"
+
 ALL_REQ="$COMFY_PATH/all.txt"
 FINAL_REQ="$COMFY_PATH/final.txt"
 LOG_FILE="$COMFY_PATH/install.log"
 
+# ==============================
+# CHECK PYTHON & CREATE VENV
+# ==============================
 
-# ==============================
-# CHECK PYTHON & CREATE/ACTIVATE VENV
-# ==============================
 if ! command -v python3 &> /dev/null; then
-    echo "ERROR: python3 is not installed. Please install it first."
+    echo "ERROR: python3 is not installed."
     exit 1
 fi
 
 if [ ! -d "$COMFY_PATH/venv" ]; then
     echo "[+] Creating virtual environment..."
+
     python3 -m venv "$COMFY_PATH/venv" || {
-        echo "ERROR: Failed to create virtual environment. Ensure python3-venv is installed."
+        echo "ERROR: Failed to create virtual environment."
         exit 1
     }
 fi
 
-echo "[+] Activating virtual environment..."
-source "$COMFY_PATH/venv/bin/activate"
+PYTHON="$COMFY_PATH/venv/bin/python"
+
+echo "[+] Python: $PYTHON"
+"$PYTHON" --version
 
 # ==============================
-# INSTALL REQUIREMENTS (SYNC)
+# ENVIRONMENT
 # ==============================
-echo "[+] Installing Python packages..."
 
-python3 -m pip install --upgrade pip setuptools wheel
-pip install -r "$COMFY_PATH/requirements.txt" --prefer-binary
+export PYTHONUNBUFFERED=1
+export PYTHONPATH="$COMFY_PATH"
+export CUDA_VISIBLE_DEVICES=0
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
-echo "[+] Installing custom_nodes requirements..."
+echo "[+] COMFY_PATH=$COMFY_PATH"
+echo "[+] CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES"
 
-{
-  find "$COMFY_PATH/custom_nodes" -type f -name "requirements.txt" -size +0c \
-    -exec sh -c 'cat "$1"; echo' _ {} \;
-} > "$ALL_REQ"
-# sed -i 's/transparent-backgrounddiffusers/transparent-background\ndiffusers/' "$ALL_REQ"
-pip install pip-tools
+# ==============================
+# CHECK PYTORCH
+# ==============================
 
-if pip-compile "$ALL_REQ" -o "$FINAL_REQ" --resolver=backtracking \
-  2>&1 | tee -a "$LOG_FILE"; then
+"$PYTHON" - <<'PY'
+import torch
 
-  echo "[+] Compile success"
+print("[+] Torch:", torch.__version__)
+print("[+] CUDA runtime:", torch.version.cuda)
+print("[+] CUDA available:", torch.cuda.is_available())
 
-else
-  echo "[!] Compile failed → fallback dùng all.txt"
-  cp "$ALL_REQ" "$FINAL_REQ"
-fi
+if torch.cuda.is_available():
+    print("[+] GPU:", torch.cuda.get_device_name(0))
+    print("[+] Compute Capability:", torch.cuda.get_device_capability(0))
+PY
 
-pip install -r "$FINAL_REQ" \
-  --prefer-binary \
-  --upgrade-strategy only-if-needed \
-  2>&1 | tee -a "$LOG_FILE"
+# ==============================
+# STOP EXISTING COMFYUI
+# ==============================
 
+echo "[+] Stopping existing ComfyUI..."
+
+pkill -f "$COMFY_PATH/main.py" 2>/dev/null || true
+
+sleep 2
 
 # ==============================
 # START COMFYUI
 # ==============================
-nohup $COMFY_PATH/python3 main.py --listen 0.0.0.0 --port 8188 > $SCRIPT_DIR/comfy.log 2>&1 &
+
+echo "[+] Starting ComfyUI..."
+
+nohup "$PYTHON" \
+    "$COMFY_PATH/main.py" \
+    --listen 0.0.0.0 \
+    --port 8188 \
+    > "$SCRIPT_DIR/comfy.log" 2>&1 &
+
+COMFY_PID=$!
+
+echo "[+] ComfyUI PID: $COMFY_PID"
+echo "[+] Log: $SCRIPT_DIR/comfy.log"
+
+sleep 3
+
+# ==============================
+# CHECK PROCESS
+# ==============================
+
+if kill -0 "$COMFY_PID" 2>/dev/null; then
+    echo "[+] ComfyUI process is running."
+else
+    echo "[!] ComfyUI failed to start."
+    echo
+    echo "===== LAST LOG ====="
+    tail -100 "$SCRIPT_DIR/comfy.log"
+    exit 1
+fi
+
+echo
+echo "======================================"
+echo " ComfyUI STARTED"
+echo "======================================"
+echo " URL : http://0.0.0.0:8188"
+echo " PID : $COMFY_PID"
+echo " LOG : $SCRIPT_DIR/comfy.log"
+echo "======================================"
