@@ -1,105 +1,165 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "======================================"
-echo " NVIDIA GPU / PyTorch Auto Installer"
-echo "======================================"
-
-# ============================================================
-# ComfyUI environment
-# ============================================================
+echo
+echo "=============================================="
+echo " NVIDIA GPU / PyTorch AUTO INSTALLER"
+echo "=============================================="
 
 COMFY_DIR="/app/ComfyUI"
 PYTHON="${COMFY_DIR}/venv/bin/python"
 
 if [ ! -x "$PYTHON" ]; then
+    echo
     echo "ERROR: ComfyUI venv not found:"
     echo "  $PYTHON"
     exit 1
 fi
 
-echo "Python: $PYTHON"
+echo
+echo "Python:"
 "$PYTHON" --version
 
-# ============================================================
+# --------------------------------------------------
 # GPU detection
-# ============================================================
+# --------------------------------------------------
 
-GPU_NAME=$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -1 || true)
+if ! command -v nvidia-smi >/dev/null 2>&1; then
+    echo "ERROR: nvidia-smi not found."
+    exit 1
+fi
+
+GPU_NAME="$(
+    nvidia-smi \
+        --query-gpu=name \
+        --format=csv,noheader \
+        2>/dev/null | head -1
+)"
 
 if [ -z "$GPU_NAME" ]; then
     echo "ERROR: NVIDIA GPU not detected."
     exit 1
 fi
 
-echo "GPU: $GPU_NAME"
+echo
+echo "GPU:"
+echo "  $GPU_NAME"
 
-# ============================================================
-# Detect Compute Capability
-# ============================================================
+# --------------------------------------------------
+# Architecture detection
+# --------------------------------------------------
 
+ARCH=""
 CC=""
 
 case "$GPU_NAME" in
 
-    # Volta
-    *V100*|*"Tesla V100"*|*"Titan V"*)
+    # ----------------------------------------------
+    # VOLTA
+    # ----------------------------------------------
+    *"Tesla V100"*|*"V100"*|*"Titan V"*)
+        ARCH="Volta"
         CC="7.0"
         ;;
 
-    # Turing
-    *T4*|*"Tesla T4"*|*"RTX 20"*|*"Quadro RTX"*)
+    # ----------------------------------------------
+    # TURING
+    # ----------------------------------------------
+    *"Tesla T4"*|*"T4"*|\
+    *"RTX 20"*|\
+    *"Quadro RTX 20"*|\
+    *"Quadro RTX 4000"*|\
+    *"Quadro RTX 5000"*|\
+    *"Quadro RTX 6000"*|\
+    *"Quadro RTX 8000"*)
+        ARCH="Turing"
         CC="7.5"
         ;;
 
-    # Ampere
-    *A100*|*A30*|*"RTX 30"*|*"RTX 3090"*|*"RTX 3080"*|*"RTX 3070"*|*"RTX 3060"*)
+    # ----------------------------------------------
+    # AMPERE SM 8.0
+    # ----------------------------------------------
+    *"A100"*|*"A30"*)
+        ARCH="Ampere"
         CC="8.0"
         ;;
 
-    *A40*|*A6000*|*"RTX A"*)
+    # ----------------------------------------------
+    # AMPERE SM 8.6
+    # ----------------------------------------------
+    *"A40"*|*"A6000"*|\
+    *"RTX 30"*|\
+    *"RTX 3090"*|*"RTX 3080"*|\
+    *"RTX 3070"*|*"RTX 3060"*|\
+    *"RTX 3050"*)
+        ARCH="Ampere"
         CC="8.6"
         ;;
 
-    # Ada
-    *L40*|*L40S*|*"RTX 40"*|*"RTX 4090"*|*"RTX 4080"*|*"RTX 4070"*|*"RTX 4060"*)
+    # ----------------------------------------------
+    # ADA
+    # ----------------------------------------------
+    *"L40"*|*"L40S"*|\
+    *"RTX 40"*|\
+    *"RTX 4090"*|*"RTX 4080"*|\
+    *"RTX 4070"*|*"RTX 4060"*|\
+    *"RTX 4050"*)
+        ARCH="Ada"
         CC="8.9"
         ;;
 
-    # Hopper
-    *H100*|*H200*)
+    # ----------------------------------------------
+    # HOPPER
+    # ----------------------------------------------
+    *"H100"*|*"H200"*)
+        ARCH="Hopper"
         CC="9.0"
         ;;
 
-    # Blackwell
-    *"RTX 50"*|*"RTX PRO 50"*|*B100*|*B200*|*GB200*)
-        CC="10.0"
+    # ----------------------------------------------
+    # BLACKWELL
+    # ----------------------------------------------
+    *"B100"*|*"B200"*|*"GB200"*|\
+    *"RTX 50"*|*"RTX PRO 50"*)
+        ARCH="Blackwell"
+        CC="10.x"
         ;;
 
     *)
-        echo
-        echo "ERROR: Unknown NVIDIA GPU architecture."
-        echo "GPU: $GPU_NAME"
-        exit 1
+        ARCH="Unknown"
+        CC="unknown"
         ;;
 esac
 
-echo "Compute Capability: $CC"
+echo
+echo "Architecture:"
+echo "  $ARCH"
 
-# ============================================================
-# Upgrade pip
-# ============================================================
+echo "Compute Capability:"
+echo "  $CC"
 
-"$PYTHON" -m pip install --upgrade pip setuptools wheel
-
-# ============================================================
-# Remove old PyTorch
-# ============================================================
+# --------------------------------------------------
+# Upgrade packaging tools
+# --------------------------------------------------
 
 echo
-echo "======================================"
-echo " Removing old PyTorch packages"
-echo "======================================"
+echo "=============================================="
+echo " Updating pip"
+echo "=============================================="
+
+"$PYTHON" -m pip install --upgrade \
+    pip \
+    setuptools \
+    wheel
+
+# --------------------------------------------------
+# Remove existing PyTorch stack
+# --------------------------------------------------
+
+echo
+echo "=============================================="
+echo " Removing existing PyTorch packages"
+echo "=============================================="
 
 "$PYTHON" -m pip uninstall -y \
     torch \
@@ -108,136 +168,270 @@ echo "======================================"
     xformers \
     2>/dev/null || true
 
-# ============================================================
-# V100 / Volta
+# --------------------------------------------------
+# VOLTA
 #
-# cu126 currently provides:
+# V100 = SM 7.0
 #
-# torch       2.9.0+cu126
-# torchvision 0.24.0+cu126
-# torchaudio  2.9.0+cu126
+# PyTorch 2.14 is the final release with
+# prebuilt CUDA wheels for Volta.
 #
-# DO NOT use torch 2.14 + torchvision 0.24.
-# ============================================================
+# CUDA 13.x does NOT support SM < 7.5.
+# --------------------------------------------------
 
-if [ "$CC" = "7.0" ]; then
+if [ "$ARCH" = "Volta" ]; then
 
     echo
-    echo "======================================"
-    echo " Tesla V100 / Volta SM 7.0"
-    echo "======================================"
+    echo "=============================================="
+    echo " VOLTA / V100 detected"
+    echo "=============================================="
 
     echo
     echo "Installing:"
-    echo "  torch       2.9.0 + cu126"
-    echo "  torchvision 0.24.0 + cu126"
-    echo "  torchaudio  2.9.0 + cu126"
+    echo "  PyTorch      : 2.14.0"
+    echo "  TorchVision  : 0.29.0"
+    echo "  CUDA wheel   : cu126"
+    echo
+    echo "Reason:"
+    echo "  Volta SM 7.0 is no longer supported by"
+    echo "  CUDA 13.x PyTorch wheels."
     echo
 
     "$PYTHON" -m pip install \
-        torch==2.9.0 \
-        torchvision==0.24.0 \
-        torchaudio==2.9.0 \
+        "torch==2.14.0" \
+        "torchvision==0.29.0" \
         --index-url https://download.pytorch.org/whl/cu126
 
-else
+    # Do NOT install torchaudio 2.14 here.
+    #
+    # There is no matching official cu126
+    # torchaudio 2.14.0 wheel.
+    #
+    # ComfyUI itself normally does not require
+    # torchaudio, and installing an unrelated
+    # torchaudio version would create dependency
+    # conflicts.
 
     echo
-    echo "======================================"
-    echo " Modern NVIDIA GPU"
-    echo "======================================"
+    echo "V100 PyTorch installation completed."
+
+# --------------------------------------------------
+# MODERN GPUs
+#
+# Turing and newer:
+# SM 7.5+
+#
+# CUDA 13.x is the current supported family.
+# --------------------------------------------------
+
+elif [ "$ARCH" != "Unknown" ]; then
+
+    echo
+    echo "=============================================="
+    echo " MODERN NVIDIA GPU detected"
+    echo "=============================================="
+
+    echo
+    echo "Architecture : $ARCH"
+    echo "Compute      : $CC"
+    echo
+    echo "Installing current stable PyTorch CUDA 13.0"
+    echo
 
     "$PYTHON" -m pip install \
         torch \
         torchvision \
-        torchaudio
+        torchaudio \
+        --index-url https://download.pytorch.org/whl/cu130
 
+else
+
+    echo
+    echo "ERROR: Unsupported / unknown NVIDIA GPU:"
+    echo "  $GPU_NAME"
+    echo
+    echo "Refusing to install a random PyTorch build."
+    exit 1
 fi
 
-# ============================================================
-# Verify versions
-# ============================================================
+# --------------------------------------------------
+# Remove accidental incompatible xformers
+# --------------------------------------------------
 
 echo
-echo "======================================"
-echo " Installed Versions"
-echo "======================================"
+echo "=============================================="
+echo " Checking xformers"
+echo "=============================================="
+
+if "$PYTHON" -m pip show xformers >/dev/null 2>&1; then
+    echo "xformers detected."
+    echo
+    echo "WARNING: xformers may be incompatible with"
+    echo "the selected PyTorch version."
+    echo
+    echo "Keeping installed version for now."
+fi
+
+# --------------------------------------------------
+# Package consistency
+# --------------------------------------------------
+
+echo
+echo "=============================================="
+echo " PyTorch package versions"
+echo "=============================================="
 
 "$PYTHON" - <<'PY'
-import torch
+import importlib.util
 
-print("Torch:", torch.__version__)
-print("Torch CUDA:", torch.version.cuda)
+mods = ["torch", "torchvision", "torchaudio"]
 
-try:
-    import torchvision
-    print("Torchvision:", torchvision.__version__)
-except Exception as e:
-    print("Torchvision ERROR:", e)
-
-try:
-    import torchaudio
-    print("Torchaudio:", torchaudio.__version__)
-except Exception as e:
-    print("Torchaudio:", e)
+for name in mods:
+    if importlib.util.find_spec(name):
+        try:
+            mod = __import__(name)
+            print(f"{name:12s}: {getattr(mod, '__version__', 'unknown')}")
+        except Exception as e:
+            print(f"{name:12s}: IMPORT ERROR")
+            print(f"  {e}")
+    else:
+        print(f"{name:12s}: not installed")
 PY
 
-# ============================================================
+# --------------------------------------------------
 # CUDA test
-# ============================================================
+# --------------------------------------------------
 
 echo
-echo "======================================"
-echo " CUDA KERNEL TEST"
-echo "======================================"
+echo "=============================================="
+echo " CUDA TEST"
+echo "=============================================="
 
 "$PYTHON" - <<'PY'
+import sys
 import torch
 
-print("Python:", torch.__version__)
-print("CUDA runtime:", torch.version.cuda)
-print("CUDA available:", torch.cuda.is_available())
+print("PyTorch version :", torch.__version__)
+print("Torch CUDA      :", torch.version.cuda)
+print("CUDA available  :", torch.cuda.is_available())
 
 if not torch.cuda.is_available():
-    raise RuntimeError("CUDA is NOT available")
+    print()
+    print("ERROR: CUDA is NOT available.")
+    sys.exit(1)
+
+print("GPU count       :", torch.cuda.device_count())
 
 for i in range(torch.cuda.device_count()):
     name = torch.cuda.get_device_name(i)
-    cc = torch.cuda.get_device_capability(i)
+    capability = torch.cuda.get_device_capability(i)
+    print(f"GPU {i}           : {name}")
+    print(f"Compute Capability: {capability[0]}.{capability[1]}")
 
-    print(f"GPU {i}: {name}")
-    print(f"CC {i}: {cc[0]}.{cc[1]}")
+# ------------------------------------------------
+# Real CUDA kernel test
+# ------------------------------------------------
 
 print()
-print("Running CUDA kernel...")
+print("Running CUDA tensor test...")
 
-x = torch.randn(
-    1, 3, 64, 64,
-    device="cuda"
+device = torch.device("cuda:0")
+
+a = torch.randn(
+    (1024, 1024),
+    device=device,
+    dtype=torch.float32,
 )
 
+b = torch.randn(
+    (1024, 1024),
+    device=device,
+    dtype=torch.float32,
+)
+
+c = a @ b
+
+torch.cuda.synchronize()
+
+print("CUDA tensor test : OK")
+print("Result shape     :", tuple(c.shape))
+
+# ------------------------------------------------
+# Small convolution test
+# ------------------------------------------------
+
+print()
+print("Running convolution test...")
+
 conv = torch.nn.Conv2d(
-    3, 16, 3
+    3,
+    16,
+    kernel_size=3,
+    padding=1,
 ).cuda()
+
+x = torch.randn(
+    1,
+    3,
+    256,
+    256,
+    device=device,
+)
 
 y = conv(x)
 
 torch.cuda.synchronize()
 
-print("Input :", x.shape)
-print("Output:", y.shape)
+print("Conv test        : OK")
+print("Output shape     :", tuple(y.shape))
+
 print()
-print("======================================")
-print(" CUDA TEST OK")
-print("======================================")
+print("==============================================")
+print(" CUDA / PyTorch TEST PASSED")
+print("==============================================")
 PY
 
-echo
-echo "======================================"
-echo " INSTALL COMPLETE"
-echo "======================================"
+# --------------------------------------------------
+# Dependency check
+# --------------------------------------------------
 
 echo
-echo "Start ComfyUI:"
-echo "cd $COMFY_DIR"
-echo "./venv/bin/python main.py --listen 0.0.0.0 --port 8188"
+echo "=============================================="
+echo " pip dependency check"
+echo "=============================================="
+
+"$PYTHON" -m pip check || true
+
+# --------------------------------------------------
+# Final information
+# --------------------------------------------------
+
+echo
+echo "=============================================="
+echo " INSTALLATION COMPLETE"
+echo "=============================================="
+
+"$PYTHON" - <<'PY'
+import torch
+
+print()
+print("PyTorch :", torch.__version__)
+print("CUDA    :", torch.version.cuda)
+print("GPU     :", torch.cuda.get_device_name(0))
+print("CC      :", torch.cuda.get_device_capability(0))
+print()
+PY
+
+echo "Python:"
+echo "  $PYTHON"
+
+echo
+echo "IMPORTANT:"
+echo "Run ComfyUI using the SAME venv:"
+echo
+echo "  $PYTHON /app/ComfyUI/main.py --listen 0.0.0.0 --port 8188"
+echo
+echo "Do NOT use:"
+echo "  python3 /app/ComfyUI/main.py"
+echo
+echo "=============================================="
