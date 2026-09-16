@@ -256,14 +256,14 @@ echo "[INFO] Activating virtual environment..."
 source "$COMFY_PATH/venv/bin/activate"
 
 echo "[INFO] Python in venv:"
-python --version
+python3 --version
 
 # ==============================
 # UPDATE PIP
 # ==============================
 echo "[INFO] Upgrading pip..."
 
-python -m pip install --upgrade \
+python3 -m pip install --upgrade \
     pip \
     setuptools \
     wheel \
@@ -331,7 +331,7 @@ pip install \
 # ==============================
 echo "[INFO] Checking PyTorch CUDA..."
 
-if python -c "import torch; exit(0 if torch.cuda.is_available() else 1)"
+if python3 -c "import torch; exit(0 if torch.cuda.is_available() else 1)"
 then
 
     echo "[INFO] PyTorch GPU OK"
@@ -354,7 +354,7 @@ fi
 # ==============================
 # FINAL TORCH CHECK
 # ==============================
-python - <<'PY'
+python3 - <<'PY'
 import torch
 
 print("================================")
@@ -388,7 +388,7 @@ echo "[INFO] Starting ComfyUI..."
 
 cd "$COMFY_PATH"
 
-nohup python main.py \
+nohup python3 main.py \
     --listen 0.0.0.0 \
     --port 8188 \
     > "$SCRIPT_DIR/comfy.log" 2>&1 &
