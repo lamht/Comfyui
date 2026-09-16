@@ -329,27 +329,17 @@ pip install \
 # ==============================
 # VERIFY TORCH CUDA
 # ==============================
-echo "[INFO] Checking PyTorch CUDA..."
+echo "[INFO] Reinstalling CUDA PyTorch..."
 
-if python3 -c "import torch; exit(0 if torch.cuda.is_available() else 1)"
-then
+pip uninstall -y torch torchvision torchaudio || true
 
-    echo "[INFO] PyTorch GPU OK"
+pip install \
+  torch \
+  torchvision \
+  torchaudio \
+  --index-url https://download.pytorch.org/whl/cu128
 
-else
 
-    echo "[WARNING] PyTorch GPU not available."
-    echo "[INFO] Reinstalling CUDA PyTorch..."
-
-    pip uninstall -y torch torchvision torchaudio || true
-
-    pip install \
-        torch \
-        torchvision \
-        torchaudio \
-        --index-url https://download.pytorch.org/whl/cu128
-
-fi
 
 # ==============================
 # FINAL TORCH CHECK
