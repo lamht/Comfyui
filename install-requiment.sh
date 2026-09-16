@@ -329,36 +329,8 @@ pip install \
 # ==============================
 # VERIFY TORCH CUDA
 # ==============================
-echo "[INFO] Reinstalling CUDA PyTorch..."
-
-pip uninstall -y torch torchvision torchaudio || true
-
-pip install \
-  torch \
-  torchvision \
-  torchaudio \
-  --index-url https://download.pytorch.org/whl/cu128
-
-
-
-# ==============================
-# FINAL TORCH CHECK
-# ==============================
-python3 - <<'PY'
-import torch
-
-print("================================")
-print("PyTorch:", torch.__version__)
-print("CUDA available:", torch.cuda.is_available())
-
-if torch.cuda.is_available():
-    print("CUDA:", torch.version.cuda)
-    print("GPU:", torch.cuda.get_device_name(0))
-else:
-    print("WARNING: CUDA GPU not available")
-
-print("================================")
-PY
+chmod +x "$SCRIPT_DIR/install_torch_auto.sh"
+"$SCRIPT_DIR/install_torch_auto.sh"
 
 # ==============================
 # STOP OLD COMFYUI
