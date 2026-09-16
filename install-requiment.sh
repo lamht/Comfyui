@@ -22,7 +22,9 @@ LOG_FILE="$COMFY_PATH/install.log"
 
 echo "Using ComfyUI at: $COMFY_PATH"
 
-# Add COMFY_PATH to bashrc
+# ==============================
+# SAVE COMFY_PATH
+# ==============================
 if ! grep -Fqx "export COMFY_PATH=\"$COMFY_PATH\"" /root/.bashrc 2>/dev/null; then
     echo "export COMFY_PATH=\"$COMFY_PATH\"" >> /root/.bashrc
 fi
@@ -41,8 +43,6 @@ fi
 # ==============================
 echo "[INFO] Cleaning old nginx repository..."
 
-# IMPORTANT:
-# Remove malformed nginx.list BEFORE apt update
 rm -f /etc/apt/sources.list.d/nginx.list
 
 # ==============================
@@ -64,7 +64,17 @@ apt-get install -y \
     ca-certificates \
     lsb-release \
     ubuntu-keyring \
-    software-properties-common
+    software-properties-common \
+    python3 \
+    python3-dev \
+    python3-venv \
+    python3-pip \
+    git \
+    unzip \
+    build-essential \
+    libgl1 \
+    libglib2.0-0 \
+    lsof
 
 # ==============================
 # INSTALL CLOUDFLARED
@@ -80,7 +90,6 @@ dpkg -i "$CLOUDFLARED_DEB" || apt-get install -f -y
 
 rm -f "$CLOUDFLARED_DEB"
 
-echo "[INFO] Cloudflared:"
 cloudflared --version
 
 # ==============================
@@ -93,57 +102,43 @@ NGINX_CODENAME="$(lsb_release -cs)"
 echo "[INFO] Ubuntu codename: $NGINX_CODENAME"
 
 curl -fsSL https://nginx.org/keys/nginx_signing.key | \
-  gpg --dearmor --yes -o /usr/share/keyrings/nginx-archive-keyring.gpg
+    gpg --dearmor --yes \
+    -o /usr/share/keyrings/nginx-archive-keyring.gpg
 
 cat > /etc/apt/sources.list.d/nginx.list <<EOF
 deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/mainline/ubuntu ${NGINX_CODENAME} nginx
 EOF
 
-echo "[INFO] NGINX repository:"
 cat /etc/apt/sources.list.d/nginx.list
 
 # ==============================
-# UPDATE APT WITH NGINX REPO
+# UPDATE APT
 # ==============================
 apt-get update
 
 # ==============================
-# INSTALL PACKAGES
+# INSTALL NGINX
 # ==============================
-echo "[INFO] Installing packages..."
-
-apt-get install -y \
-  curl \
-  git \
-  unzip \
-  gnupg2 \
-  ca-certificates \
-  lsb-release \
-  ubuntu-keyring \
-  build-essential \
-  libgl1 \
-  libglib2.0-0 \
-  python3 \
-  python3-dev \
-  python3-venv \
-  python3-pip \
-  lsof \
-  nginx
+apt-get install -y nginx
 
 # ==============================
 # CONFIG NGINX
 # ==============================
 if [ -f "$SCRIPT_DIR/nginx.conf" ]; then
+
     cp "$SCRIPT_DIR/nginx.conf" /etc/nginx/nginx.conf
 
     echo "[INFO] Testing nginx configuration..."
     nginx -t
 
-    echo "[INFO] Starting nginx..."
+    echo "[INFO] Starting/reloading nginx..."
+
     nginx -s reload 2>/dev/null || nginx
 
 else
+
     echo "[INFO] nginx.conf not found, skip custom configuration"
+
 fi
 
 # ==============================
@@ -186,19 +181,25 @@ git config --global core.compression 0
 # CUSTOM NODE FUNCTION
 # ==============================
 clone_node() {
+
     local URL="$1"
     local DEST="$2"
 
     echo "[INFO] Installing: $DEST"
 
     if [ -d "$DEST/.git" ]; then
+
         echo "[INFO] Already exists, updating..."
+
         git -C "$DEST" pull --ff-only || true
+
     else
+
         git clone --depth 1 "$URL" "$DEST" || {
             echo "[WARNING] Failed to clone $URL"
             echo "[WARNING] Continuing..."
         }
+
     fi
 }
 
@@ -230,56 +231,43 @@ clone_node \
     "$COMFY_PATH/custom_nodes/batch_image_loader"
 
 # ==============================
-# CHECK PYTHON
+# PYTHON / VENV
 # ==============================
-if ! command -v python3 >/dev/null 2>&1; then
-    echo "[ERROR] python3 not found."
-    exit 1
-fi
+PYTHON="$COMFY_PATH/venv/bin/python"
 
-echo "[INFO] Python:"
-python3 --version
+if [ ! -x "$PYTHON" ]; then
 
-# ==============================
-# CREATE VENV
-# ==============================
-if [ ! -d "$COMFY_PATH/venv" ]; then
     echo "[INFO] Creating virtual environment..."
+
     python3 -m venv "$COMFY_PATH/venv"
+
 fi
 
-# ==============================
-# ACTIVATE VENV
-# ==============================
-echo "[INFO] Activating virtual environment..."
-
-source "$COMFY_PATH/venv/bin/activate"
-
-echo "[INFO] Python in venv:"
-python3 --version
+echo "[INFO] Venv Python:"
+"$PYTHON" --version
 
 # ==============================
-# UPDATE PIP
+# UPGRADE PIP
 # ==============================
 echo "[INFO] Upgrading pip..."
 
-python3 -m pip install --upgrade \
+"$PYTHON" -m pip install --upgrade \
     pip \
     setuptools \
     wheel \
     pip-tools
 
 # ==============================
-# INSTALL COMFYUI REQUIREMENTS
+# COMFYUI REQUIREMENTS
 # ==============================
 echo "[INFO] Installing ComfyUI requirements..."
 
-pip install \
+"$PYTHON" -m pip install \
     -r "$COMFY_PATH/requirements.txt" \
     --prefer-binary
 
 # ==============================
-# BUILD CUSTOM NODE REQUIREMENTS
+# COLLECT NODE REQUIREMENTS
 # ==============================
 echo "[INFO] Collecting custom node requirements..."
 
@@ -313,6 +301,7 @@ else
     echo "[WARNING] Using raw requirements.txt"
 
     cp "$ALL_REQ" "$FINAL_REQ"
+
 fi
 
 # ==============================
@@ -320,17 +309,61 @@ fi
 # ==============================
 echo "[INFO] Installing custom node requirements..."
 
-pip install \
+"$PYTHON" -m pip install \
     -r "$FINAL_REQ" \
     --prefer-binary \
     --upgrade-strategy only-if-needed \
     2>&1 | tee -a "$LOG_FILE"
 
 # ==============================
-# VERIFY TORCH CUDA
+# SQLALCHEMY
 # ==============================
+echo "[INFO] Installing SQLAlchemy..."
+
+"$PYTHON" -m pip install sqlalchemy
+
+# ==============================
+# FIX PYTORCH / CUDA
+# ==============================
+echo
+echo "======================================"
+echo " FIXING PYTORCH / CUDA"
+echo "======================================"
+
 chmod +x "$SCRIPT_DIR/install_torch_auto.sh"
+
 "$SCRIPT_DIR/install_torch_auto.sh"
+
+# ==============================
+# FINAL PYTORCH CHECK
+# ==============================
+echo
+echo "======================================"
+echo " FINAL PYTORCH CHECK"
+echo "======================================"
+
+"$PYTHON" - <<'PY'
+import torch
+
+print("Torch:", torch.__version__)
+print("CUDA runtime:", torch.version.cuda)
+print("CUDA available:", torch.cuda.is_available())
+
+if not torch.cuda.is_available():
+    raise RuntimeError("CUDA is NOT available")
+
+print("GPU:", torch.cuda.get_device_name(0))
+print("Compute Capability:", torch.cuda.get_device_capability(0))
+
+x = torch.randn(1, 3, 64, 64, device="cuda")
+conv = torch.nn.Conv2d(3, 16, 3).cuda()
+y = conv(x)
+
+torch.cuda.synchronize()
+
+print("CUDA kernel test: OK")
+print("Output:", y.shape)
+PY
 
 # ==============================
 # STOP OLD COMFYUI
@@ -341,6 +374,7 @@ PIDS="$(lsof -t -i:8188 2>/dev/null || true)"
 
 if [ -n "$PIDS" ]; then
     kill -9 $PIDS || true
+    sleep 2
 fi
 
 # ==============================
@@ -350,7 +384,13 @@ echo "[INFO] Starting ComfyUI..."
 
 cd "$COMFY_PATH"
 
-nohup python3 main.py \
+export PYTHONUNBUFFERED=1
+export PYTHONPATH="$COMFY_PATH"
+export CUDA_VISIBLE_DEVICES=0
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+
+nohup "$PYTHON" \
+    "$COMFY_PATH/main.py" \
     --listen 0.0.0.0 \
     --port 8188 \
     > "$SCRIPT_DIR/comfy.log" 2>&1 &
@@ -362,11 +402,15 @@ echo "[INFO] ComfyUI PID: $COMFY_PID"
 sleep 10
 
 if kill -0 "$COMFY_PID" 2>/dev/null; then
+
     echo "[INFO] ComfyUI started successfully."
+
 else
+
     echo "[ERROR] ComfyUI failed to start."
     tail -100 "$SCRIPT_DIR/comfy.log"
     exit 1
+
 fi
 
 # ==============================
@@ -374,7 +418,6 @@ fi
 # ==============================
 echo "[INFO] Starting Cloudflared..."
 
-# Kill only cloudflared processes
 pkill -x cloudflared 2>/dev/null || true
 
 nohup cloudflared tunnel \
@@ -387,6 +430,7 @@ echo "[INFO] Cloudflared PID: $CF_PID"
 
 sleep 10
 
+echo
 echo "=============================="
 echo "Cloudflared log:"
 cat "$SCRIPT_DIR/cf.log" || true
@@ -400,11 +444,11 @@ fi
 
 echo
 echo "======================================"
-echo "INSTALLATION COMPLETED"
+echo " INSTALLATION COMPLETED"
 echo "======================================"
-echo "ComfyUI : http://0.0.0.0:8188"
-echo "ComfyUI PID: $COMFY_PID"
+echo "ComfyUI       : http://0.0.0.0:8188"
+echo "ComfyUI PID   : $COMFY_PID"
 echo "Cloudflared PID: $CF_PID"
-echo "ComfyUI log: $SCRIPT_DIR/comfy.log"
+echo "ComfyUI log   : $SCRIPT_DIR/comfy.log"
 echo "Cloudflared log: $SCRIPT_DIR/cf.log"
 echo "======================================"
