@@ -2,6 +2,14 @@
 set -euo pipefail
 
 # ==============================
+# ROOT CHECK
+# ==============================
+if [ "$(id -u)" -ne 0 ]; then
+    echo "[ERROR] Please run this script as root."
+    exit 1
+fi
+
+# ==============================
 # SCRIPT PATHS
 # ==============================
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -12,251 +20,429 @@ ALL_REQ="$COMFY_PATH/all.txt"
 FINAL_REQ="$COMFY_PATH/final.txt"
 LOG_FILE="$COMFY_PATH/install.log"
 
-if ! grep -qx "export COMFY_PATH=\"$COMFY_PATH\"" ~/.bashrc 2>/dev/null; then
-    echo "export COMFY_PATH=\"$COMFY_PATH\"" >> ~/.bashrc
-fi
-
-export COMFY_PATH
-
 echo "Using ComfyUI at: $COMFY_PATH"
+
+# Add COMFY_PATH to bashrc
+if ! grep -Fqx "export COMFY_PATH=\"$COMFY_PATH\"" /root/.bashrc 2>/dev/null; then
+    echo "export COMFY_PATH=\"$COMFY_PATH\"" >> /root/.bashrc
+fi
 
 # ==============================
 # CHECK COMFYUI
 # ==============================
 if [ ! -d "$COMFY_PATH" ]; then
-    echo "ERROR: ComfyUI directory not found:"
+    echo "[ERROR] ComfyUI directory not found:"
     echo "$COMFY_PATH"
     exit 1
 fi
 
 # ==============================
+# FIX BROKEN NGINX REPOSITORY
+# ==============================
+echo "[INFO] Cleaning old nginx repository..."
+
+# IMPORTANT:
+# Remove malformed nginx.list BEFORE apt update
+rm -f /etc/apt/sources.list.d/nginx.list
+
+# ==============================
+# INITIAL APT UPDATE
+# ==============================
+echo "[INFO] Updating apt..."
+
+apt-get update
+
+# ==============================
+# INSTALL APT PREREQUISITES
+# ==============================
+echo "[INFO] Installing prerequisites..."
+
+apt-get install -y \
+    curl \
+    wget \
+    gnupg2 \
+    ca-certificates \
+    lsb-release \
+    ubuntu-keyring \
+    software-properties-common
+
+# ==============================
 # INSTALL CLOUDFLARED
 # ==============================
-wget -q -O cloudflared-linux-amd64.deb \
-https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+echo "[INFO] Installing cloudflared..."
 
-sudo dpkg -i cloudflared-linux-amd64.deb || sudo apt-get install -f -y
+CLOUDFLARED_DEB="/tmp/cloudflared-linux-amd64.deb"
+
+wget -q -O "$CLOUDFLARED_DEB" \
+    "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb"
+
+dpkg -i "$CLOUDFLARED_DEB" || apt-get install -f -y
+
+rm -f "$CLOUDFLARED_DEB"
+
+echo "[INFO] Cloudflared:"
+cloudflared --version
 
 # ==============================
 # ADD NGINX REPO
 # ==============================
-curl -fsSL https://nginx.org/keys/nginx_signing.key \
-| gpg --dearmor \
-| sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
+echo "[INFO] Adding nginx repository..."
 
-echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/mainline/ubuntu $(lsb_release -cs) nginx" \
-| sudo tee /etc/apt/sources.list.d/nginx.list >/dev/null
+NGINX_CODENAME="$(lsb_release -cs)"
+
+echo "[INFO] Ubuntu codename: $NGINX_CODENAME"
+
+curl -fsSL https://nginx.org/keys/nginx_signing.key | \
+  gpg --dearmor --yes -o /usr/share/keyrings/nginx-archive-keyring.gpg
+
+cat > /etc/apt/sources.list.d/nginx.list <<EOF
+deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/mainline/ubuntu ${NGINX_CODENAME} nginx
+EOF
+
+echo "[INFO] NGINX repository:"
+cat /etc/apt/sources.list.d/nginx.list
+
+# ==============================
+# UPDATE APT WITH NGINX REPO
+# ==============================
+apt-get update
 
 # ==============================
 # INSTALL PACKAGES
 # ==============================
-sudo apt update
+echo "[INFO] Installing packages..."
 
-sudo apt install -y \
-curl \
-git \
-unzip \
-gnupg2 \
-ca-certificates \
-lsb-release \
-ubuntu-keyring \
-build-essential \
-libgl1-mesa-glx \
-libglib2.0-0 \
-python3 \
-python3-dev \
-python3-venv \
-python3-pip \
-lsof \
-nginx
+apt-get install -y \
+  curl \
+  git \
+  unzip \
+  gnupg2 \
+  ca-certificates \
+  lsb-release \
+  ubuntu-keyring \
+  build-essential \
+  libgl1 \
+  libglib2.0-0 \
+  python3 \
+  python3-dev \
+  python3-venv \
+  python3-pip \
+  lsof \
+  nginx
 
 # ==============================
 # CONFIG NGINX
 # ==============================
 if [ -f "$SCRIPT_DIR/nginx.conf" ]; then
-    sudo cp "$SCRIPT_DIR/nginx.conf" /etc/nginx/nginx.conf
-    sudo nginx -t
-    sudo systemctl restart nginx
+    cp "$SCRIPT_DIR/nginx.conf" /etc/nginx/nginx.conf
+
+    echo "[INFO] Testing nginx configuration..."
+    nginx -t
+
+    echo "[INFO] Starting nginx..."
+    nginx -s reload 2>/dev/null || nginx
+
+else
+    echo "[INFO] nginx.conf not found, skip custom configuration"
 fi
 
 # ==============================
 # DOWNLOAD CUSTOM NODES
 # ==============================
-wget -O custom_nodes.zip \
-"https://www.dropbox.com/scl/fi/ccabj5q3p8go0ht8fkwif/custom_nodes.zip?rlkey=6lh2ok89q00deqm0fgptdv1m7&dl=1"
+echo "[INFO] Downloading custom nodes..."
 
-unzip -o custom_nodes.zip -d "$COMFY_PATH"
+CUSTOM_NODES_ZIP="/tmp/custom_nodes.zip"
+
+wget -q -O "$CUSTOM_NODES_ZIP" \
+    "https://www.dropbox.com/scl/fi/ccabj5q3p8go0ht8fkwif/custom_nodes.zip?rlkey=6lh2ok89q00deqm0fgptdv1m7&dl=1"
+
+unzip -o "$CUSTOM_NODES_ZIP" -d "$COMFY_PATH"
+
+rm -f "$CUSTOM_NODES_ZIP"
 
 # ==============================
 # REMOVE OLD NODES
 # ==============================
-rm -rf "$COMFY_PATH/custom_nodes/rgthree-comfy" || true
-rm -rf "$COMFY_PATH/custom_nodes/ComfyUI-Crystools" || true
-rm -rf "$COMFY_PATH/custom_nodes/comfyui-manager" || true
-rm -rf "$COMFY_PATH/custom_nodes/ComfyUI-Inpaint-CropAndStitch" || true
-rm -rf "$COMFY_PATH/custom_nodes/ComfyUI-Dwpose-Tensorrt" || true
-rm -rf "$COMFY_PATH/custom_nodes/batch_image_loader" || true
+echo "[INFO] Removing old custom nodes..."
+
+rm -rf "$COMFY_PATH/custom_nodes/rgthree-comfy"
+rm -rf "$COMFY_PATH/custom_nodes/ComfyUI-Crystools"
+rm -rf "$COMFY_PATH/custom_nodes/comfyui-manager"
+rm -rf "$COMFY_PATH/custom_nodes/ComfyUI-Inpaint-CropAndStitch"
+rm -rf "$COMFY_PATH/custom_nodes/ComfyUI-Dwpose-Tensorrt"
+rm -rf "$COMFY_PATH/custom_nodes/batch_image_loader"
 
 # ==============================
 # GIT SETTINGS
 # ==============================
+echo "[INFO] Configuring git..."
+
 git config --global http.version HTTP/1.1
 git config --global http.lowSpeedLimit 1000
 git config --global http.lowSpeedTime 30
 git config --global core.compression 0
 
 # ==============================
+# CUSTOM NODE FUNCTION
+# ==============================
+clone_node() {
+    local URL="$1"
+    local DEST="$2"
+
+    echo "[INFO] Installing: $DEST"
+
+    if [ -d "$DEST/.git" ]; then
+        echo "[INFO] Already exists, updating..."
+        git -C "$DEST" pull --ff-only || true
+    else
+        git clone --depth 1 "$URL" "$DEST" || {
+            echo "[WARNING] Failed to clone $URL"
+            echo "[WARNING] Continuing..."
+        }
+    fi
+}
+
+# ==============================
 # INSTALL REQUIRED NODES
 # ==============================
-git clone --depth 1 https://github.com/rgthree/rgthree-comfy.git \
-"$COMFY_PATH/custom_nodes/rgthree-comfy" || true
+clone_node \
+    "https://github.com/rgthree/rgthree-comfy.git" \
+    "$COMFY_PATH/custom_nodes/rgthree-comfy"
 
-git clone --depth 1 https://github.com/ltdrdata/ComfyUI-Manager.git \
-"$COMFY_PATH/custom_nodes/comfyui-manager" || true
+clone_node \
+    "https://github.com/ltdrdata/ComfyUI-Manager.git" \
+    "$COMFY_PATH/custom_nodes/comfyui-manager"
 
-git clone --depth 1 https://github.com/crystian/ComfyUI-Crystools.git \
-"$COMFY_PATH/custom_nodes/ComfyUI-Crystools" || true
+clone_node \
+    "https://github.com/crystian/ComfyUI-Crystools.git" \
+    "$COMFY_PATH/custom_nodes/ComfyUI-Crystools"
 
-git clone --depth 1 https://github.com/lquesada/ComfyUI-Inpaint-CropAndStitch.git \
-"$COMFY_PATH/custom_nodes/ComfyUI-Inpaint-CropAndStitch" || true
+clone_node \
+    "https://github.com/lquesada/ComfyUI-Inpaint-CropAndStitch.git" \
+    "$COMFY_PATH/custom_nodes/ComfyUI-Inpaint-CropAndStitch"
 
-git clone --depth 1 https://github.com/yuvraj108c/ComfyUI-Dwpose-Tensorrt.git \
-"$COMFY_PATH/custom_nodes/ComfyUI-Dwpose-Tensorrt" || true
+clone_node \
+    "https://github.com/yuvraj108c/ComfyUI-Dwpose-Tensorrt.git" \
+    "$COMFY_PATH/custom_nodes/ComfyUI-Dwpose-Tensorrt"
 
-git clone --depth 1 https://github.com/orion4d/batch_image_loader.git \
-"$COMFY_PATH/custom_nodes/batch_image_loader" || true
+clone_node \
+    "https://github.com/orion4d/batch_image_loader.git" \
+    "$COMFY_PATH/custom_nodes/batch_image_loader"
 
 # ==============================
 # CHECK PYTHON
 # ==============================
 if ! command -v python3 >/dev/null 2>&1; then
-    echo "ERROR: python3 not found"
+    echo "[ERROR] python3 not found."
     exit 1
 fi
+
+echo "[INFO] Python:"
+python3 --version
 
 # ==============================
 # CREATE VENV
 # ==============================
 if [ ! -d "$COMFY_PATH/venv" ]; then
-    echo "[+] Creating virtual environment..."
+    echo "[INFO] Creating virtual environment..."
     python3 -m venv "$COMFY_PATH/venv"
 fi
 
-echo "[+] Activating virtual environment..."
+# ==============================
+# ACTIVATE VENV
+# ==============================
+echo "[INFO] Activating virtual environment..."
+
 source "$COMFY_PATH/venv/bin/activate"
+
+echo "[INFO] Python in venv:"
+python --version
 
 # ==============================
 # UPDATE PIP
 # ==============================
+echo "[INFO] Upgrading pip..."
+
 python -m pip install --upgrade \
-pip \
-setuptools \
-wheel \
-pip-tools
+    pip \
+    setuptools \
+    wheel \
+    pip-tools
 
 # ==============================
 # INSTALL COMFYUI REQUIREMENTS
 # ==============================
-echo "[+] Installing ComfyUI requirements..."
+echo "[INFO] Installing ComfyUI requirements..."
 
 pip install \
--r "$COMFY_PATH/requirements.txt" \
---prefer-binary
+    -r "$COMFY_PATH/requirements.txt" \
+    --prefer-binary
 
 # ==============================
 # BUILD CUSTOM NODE REQUIREMENTS
 # ==============================
-echo "[+] Collecting node requirements..."
+echo "[INFO] Collecting custom node requirements..."
 
 find "$COMFY_PATH/custom_nodes" \
--type f \
--name requirements.txt \
--size +0c \
--exec sh -c 'cat "$1"; echo' _ {} \; \
-> "$ALL_REQ"
+    -type f \
+    -name requirements.txt \
+    -size +0c \
+    -exec sh -c 'cat "$1"; echo' _ {} \; \
+    > "$ALL_REQ"
 
-# Optional fix if needed
-# sed -i 's/transparent-backgrounddiffusers/transparent-background\ndiffusers/' "$ALL_REQ"
+echo "[INFO] Requirements collected:"
+wc -l "$ALL_REQ"
+
+# ==============================
+# COMPILE REQUIREMENTS
+# ==============================
+echo "[INFO] Running pip-compile..."
 
 if pip-compile \
-"$ALL_REQ" \
--o "$FINAL_REQ" \
---resolver=backtracking \
-2>&1 | tee -a "$LOG_FILE"
+    "$ALL_REQ" \
+    -o "$FINAL_REQ" \
+    --resolver=backtracking \
+    2>&1 | tee -a "$LOG_FILE"
 then
 
-    echo "[+] pip-compile success"
+    echo "[INFO] pip-compile success"
 
 else
 
-    echo "[!] pip-compile failed → fallback"
-    cp "$ALL_REQ" "$FINAL_REQ"
+    echo "[WARNING] pip-compile failed."
+    echo "[WARNING] Using raw requirements.txt"
 
+    cp "$ALL_REQ" "$FINAL_REQ"
 fi
 
 # ==============================
 # INSTALL NODE REQUIREMENTS
 # ==============================
+echo "[INFO] Installing custom node requirements..."
+
 pip install \
--r "$FINAL_REQ" \
---prefer-binary \
---upgrade-strategy only-if-needed \
-2>&1 | tee -a "$LOG_FILE"
+    -r "$FINAL_REQ" \
+    --prefer-binary \
+    --upgrade-strategy only-if-needed \
+    2>&1 | tee -a "$LOG_FILE"
 
 # ==============================
 # VERIFY TORCH CUDA
 # ==============================
+echo "[INFO] Checking PyTorch CUDA..."
+
 if python -c "import torch; exit(0 if torch.cuda.is_available() else 1)"
 then
 
-    echo "PyTorch GPU OK"
+    echo "[INFO] PyTorch GPU OK"
 
 else
 
-    echo "PyTorch GPU not available -> reinstall"
+    echo "[WARNING] PyTorch GPU not available."
+    echo "[INFO] Reinstalling CUDA PyTorch..."
 
     pip uninstall -y torch torchvision torchaudio || true
 
     pip install \
-    torch \
-    torchvision \
-    torchaudio \
-    --index-url https://download.pytorch.org/whl/cu128
+        torch \
+        torchvision \
+        torchaudio \
+        --index-url https://download.pytorch.org/whl/cu128
 
 fi
 
 # ==============================
+# FINAL TORCH CHECK
+# ==============================
+python - <<'PY'
+import torch
+
+print("================================")
+print("PyTorch:", torch.__version__)
+print("CUDA available:", torch.cuda.is_available())
+
+if torch.cuda.is_available():
+    print("CUDA:", torch.version.cuda)
+    print("GPU:", torch.cuda.get_device_name(0))
+else:
+    print("WARNING: CUDA GPU not available")
+
+print("================================")
+PY
+
+# ==============================
 # STOP OLD COMFYUI
 # ==============================
-kill -9 "$(lsof -t -i:8188)" 2>/dev/null || true
+echo "[INFO] Stopping old ComfyUI..."
+
+PIDS="$(lsof -t -i:8188 2>/dev/null || true)"
+
+if [ -n "$PIDS" ]; then
+    kill -9 $PIDS || true
+fi
 
 # ==============================
 # START COMFYUI
 # ==============================
+echo "[INFO] Starting ComfyUI..."
+
 cd "$COMFY_PATH"
 
 nohup python main.py \
---listen 0.0.0.0 \
---port 8188 \
-> "$SCRIPT_DIR/comfy.log" 2>&1 &
+    --listen 0.0.0.0 \
+    --port 8188 \
+    > "$SCRIPT_DIR/comfy.log" 2>&1 &
+
+COMFY_PID=$!
+
+echo "[INFO] ComfyUI PID: $COMFY_PID"
 
 sleep 10
 
-echo "[+] ComfyUI started"
+if kill -0 "$COMFY_PID" 2>/dev/null; then
+    echo "[INFO] ComfyUI started successfully."
+else
+    echo "[ERROR] ComfyUI failed to start."
+    tail -100 "$SCRIPT_DIR/comfy.log"
+    exit 1
+fi
 
 # ==============================
 # START CLOUDFLARED
 # ==============================
-pkill -f cloudflared || true
+echo "[INFO] Starting Cloudflared..."
+
+# Kill only cloudflared processes
+pkill -x cloudflared 2>/dev/null || true
 
 nohup cloudflared tunnel \
---url http://localhost:8188 \
-> "$SCRIPT_DIR/cf.log" 2>&1 &
+    --url http://127.0.0.1:8188 \
+    > "$SCRIPT_DIR/cf.log" 2>&1 &
+
+CF_PID=$!
+
+echo "[INFO] Cloudflared PID: $CF_PID"
 
 sleep 10
 
 echo "=============================="
+echo "Cloudflared log:"
 cat "$SCRIPT_DIR/cf.log" || true
 echo "=============================="
 
-echo "DONE"
+if kill -0 "$CF_PID" 2>/dev/null; then
+    echo "[INFO] Cloudflared started successfully."
+else
+    echo "[WARNING] Cloudflared process exited."
+fi
+
+echo
+echo "======================================"
+echo "INSTALLATION COMPLETED"
+echo "======================================"
+echo "ComfyUI : http://0.0.0.0:8188"
+echo "ComfyUI PID: $COMFY_PID"
+echo "Cloudflared PID: $CF_PID"
+echo "ComfyUI log: $SCRIPT_DIR/comfy.log"
+echo "Cloudflared log: $SCRIPT_DIR/cf.log"
+echo "======================================"
