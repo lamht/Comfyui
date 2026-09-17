@@ -81,7 +81,7 @@ echo "[+] Starting ComfyUI..."
 nohup "$PYTHON" \
     "$COMFY_PATH/main.py" \
     --listen 0.0.0.0 \
-    --port 8188 \
+    --port 8189 \
     > "$SCRIPT_DIR/comfy.log" 2>&1 &
 
 COMFY_PID=$!
@@ -109,7 +109,7 @@ echo
 echo "======================================"
 echo " ComfyUI STARTED"
 echo "======================================"
-echo " URL : http://0.0.0.0:8188"
+echo " URL : http://0.0.0.0:8189"
 echo " PID : $COMFY_PID"
 echo " LOG : $SCRIPT_DIR/comfy.log"
 echo "======================================"

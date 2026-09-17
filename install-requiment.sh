@@ -392,7 +392,7 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 nohup "$PYTHON" \
     "$COMFY_PATH/main.py" \
     --listen 0.0.0.0 \
-    --port 8188 \
+    --port 8189 \
     > "$SCRIPT_DIR/comfy.log" 2>&1 &
 
 COMFY_PID=$!
@@ -419,9 +419,9 @@ fi
 echo "[INFO] Starting Cloudflared..."
 
 pkill -x cloudflared 2>/dev/null || true
-
+# foward port 9999 nginx -> comfyui 8189
 nohup cloudflared tunnel \
-    --url http://127.0.0.1:8188 \
+    --url http://127.0.0.1:9999 \
     > "$SCRIPT_DIR/cf.log" 2>&1 &
 
 CF_PID=$!
@@ -446,7 +446,7 @@ echo
 echo "======================================"
 echo " INSTALLATION COMPLETED"
 echo "======================================"
-echo "ComfyUI       : http://0.0.0.0:8188"
+echo "ComfyUI       : http://0.0.0.0:8189"
 echo "ComfyUI PID   : $COMFY_PID"
 echo "Cloudflared PID: $CF_PID"
 echo "ComfyUI log   : $SCRIPT_DIR/comfy.log"
