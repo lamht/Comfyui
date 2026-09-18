@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 # ==============================
 # SCRIPT PATHS
@@ -42,6 +43,7 @@ export PYTHONUNBUFFERED=1
 export PYTHONPATH="$COMFY_PATH"
 export CUDA_VISIBLE_DEVICES=0
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+COMFY_PORT=8189
 
 echo "[+] COMFY_PATH=$COMFY_PATH"
 echo "[+] CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES"
@@ -63,14 +65,40 @@ if torch.cuda.is_available():
 PY
 
 # ==============================
-# STOP EXISTING COMFYUI
+# STOP EXISTING PYTHON PROCESSES
 # ==============================
 
-echo "[+] Stopping existing ComfyUI..."
+echo "[+] Stopping existing Python processes..."
 
-pkill -f "$COMFY_PATH/main.py" 2>/dev/null || true
+PYTHON_PIDS="$(pgrep -f '(^|/)(python|python3)([0-9.]*)($|[[:space:]])' 2>/dev/null || true)"
 
-sleep 2
+if [ -n "$PYTHON_PIDS" ]; then
+    while read -r PID; do
+        [ -n "$PID" ] && kill -TERM "$PID" 2>/dev/null || true
+    done <<< "$PYTHON_PIDS"
+    sleep 2
+
+    PYTHON_PIDS="$(pgrep -f '(^|/)(python|python3)([0-9.]*)($|[[:space:]])' 2>/dev/null || true)"
+    if [ -n "$PYTHON_PIDS" ]; then
+        while read -r PID; do
+            [ -n "$PID" ] && kill -KILL "$PID" 2>/dev/null || true
+        done <<< "$PYTHON_PIDS"
+    fi
+fi
+
+# ==============================
+# STOP EXISTING COMFYUI PORT
+# ==============================
+
+echo "[+] Stopping processes on port $COMFY_PORT..."
+
+PORT_PIDS="$(lsof -t -i:"$COMFY_PORT" 2>/dev/null || true)"
+if [ -n "$PORT_PIDS" ]; then
+    while read -r PID; do
+        [ -n "$PID" ] && kill -KILL "$PID" 2>/dev/null || true
+    done <<< "$PORT_PIDS"
+    sleep 2
+fi
 
 # ==============================
 # START COMFYUI
@@ -81,7 +109,7 @@ echo "[+] Starting ComfyUI..."
 nohup "$PYTHON" \
     "$COMFY_PATH/main.py" \
     --listen 0.0.0.0 \
-    --port 8189 \
+    --port "$COMFY_PORT" \
     > "$SCRIPT_DIR/comfy.log" 2>&1 &
 
 COMFY_PID=$!
@@ -109,7 +137,7 @@ echo
 echo "======================================"
 echo " ComfyUI STARTED"
 echo "======================================"
-echo " URL : http://0.0.0.0:8189"
+echo " URL : http://0.0.0.0:$COMFY_PORT"
 echo " PID : $COMFY_PID"
 echo " LOG : $SCRIPT_DIR/comfy.log"
 echo "======================================"

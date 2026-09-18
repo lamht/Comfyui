@@ -6,7 +6,8 @@ echo "=============================================="
 echo " NVIDIA GPU / PyTorch AUTO INSTALLER"
 echo "=============================================="
 
-COMFY_DIR="/app/ComfyUI"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+COMFY_DIR="${COMFY_PATH:-$SCRIPT_DIR/ComfyUI}"
 PYTHON="${COMFY_DIR}/venv/bin/python"
 
 if [ ! -x "$PYTHON" ]; then
@@ -429,9 +430,9 @@ echo
 echo "IMPORTANT:"
 echo "Run ComfyUI using the SAME venv:"
 echo
-echo "  $PYTHON /app/ComfyUI/main.py --listen 0.0.0.0 --port 8188"
+echo "  $PYTHON $COMFY_DIR/main.py --listen 0.0.0.0 --port 8189"
 echo
 echo "Do NOT use:"
-echo "  python3 /app/ComfyUI/main.py"
+echo "  python3 $COMFY_DIR/main.py"
 echo
 echo "=============================================="

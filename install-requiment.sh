@@ -191,13 +191,16 @@ clone_node() {
 
         echo "[INFO] Already exists, updating..."
 
-        git -C "$DEST" pull --ff-only || true
+        git -C "$DEST" pull --ff-only || {
+            echo "[WARNING] Failed to update $DEST"
+            echo "[WARNING] Continuing with the existing checkout."
+        }
 
     else
 
         git clone --depth 1 "$URL" "$DEST" || {
             echo "[WARNING] Failed to clone $URL"
-            echo "[WARNING] Continuing..."
+            echo "[WARNING] Continuing without this custom node."
         }
 
     fi
@@ -265,7 +268,7 @@ echo "[INFO] Installing ComfyUI requirements..."
 COMFY_REQ_NO_TORCH="$COMFY_PATH/requirements-no-torch.txt"
 
 grep -Eiv '^[[:space:]]*(torch|torchvision|torchaudio)([<=>~!;[:space:]]|$)' \
-    "$COMFY_PATH/requirements.txt" > "$COMFY_REQ_NO_TORCH"
+    "$COMFY_PATH/requirements.txt" > "$COMFY_REQ_NO_TORCH" || [ $? -eq 1 ]
 
 "$PYTHON" -m pip install \
     -r "$COMFY_REQ_NO_TORCH" \
@@ -288,7 +291,7 @@ find "$COMFY_PATH/custom_nodes" \
 # PyTorch is installed by install_torch_auto.sh below. Do not let the
 # custom-node requirements replace it with another build.
 grep -Eiv '^[[:space:]]*(torch|torchvision|torchaudio)([<=>~!;[:space:]]|$)' \
-    "$ALL_REQ" > "$ALL_REQ.filtered"
+    "$ALL_REQ" > "$ALL_REQ.filtered" || [ $? -eq 1 ]
 mv "$ALL_REQ.filtered" "$ALL_REQ"
 
 echo "[INFO] Requirements collected:"
@@ -299,7 +302,7 @@ wc -l "$ALL_REQ"
 # ==============================
 echo "[INFO] Running pip-compile..."
 
-if pip-compile \
+if "$PYTHON" -m piptools compile \
     "$ALL_REQ" \
     -o "$FINAL_REQ" \
     --resolver=backtracking \
@@ -348,14 +351,38 @@ chmod +x "$SCRIPT_DIR/install_torch_auto.sh"
 "$SCRIPT_DIR/install_torch_auto.sh"
 
 # ==============================
+# STOP PYTHON PROCESSES
+# ==============================
+echo "[INFO] Stopping existing Python processes..."
+
+PYTHON_PIDS="$(pgrep -f '(^|/)(python|python3)([0-9.]*)($|[[:space:]])' 2>/dev/null || true)"
+
+if [ -n "$PYTHON_PIDS" ]; then
+    while read -r PID; do
+        [ -n "$PID" ] && kill -TERM "$PID" 2>/dev/null || true
+    done <<< "$PYTHON_PIDS"
+    sleep 2
+
+    PYTHON_PIDS="$(pgrep -f '(^|/)(python|python3)([0-9.]*)($|[[:space:]])' 2>/dev/null || true)"
+    if [ -n "$PYTHON_PIDS" ]; then
+        while read -r PID; do
+            [ -n "$PID" ] && kill -KILL "$PID" 2>/dev/null || true
+        done <<< "$PYTHON_PIDS"
+    fi
+fi
+
+# ==============================
 # STOP OLD COMFYUI
 # ==============================
 echo "[INFO] Stopping old ComfyUI..."
 
-PIDS="$(lsof -t -i:8188 2>/dev/null || true)"
+COMFY_PORT=8189
+PIDS="$(lsof -t -i:"$COMFY_PORT" 2>/dev/null || true)"
 
 if [ -n "$PIDS" ]; then
-    kill -9 $PIDS || true
+    while read -r PID; do
+        [ -n "$PID" ] && kill -9 "$PID" || true
+    done <<< "$PIDS"
     sleep 2
 fi
 
@@ -374,7 +401,7 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 nohup "$PYTHON" \
     "$COMFY_PATH/main.py" \
     --listen 0.0.0.0 \
-    --port 8189 \
+    --port "$COMFY_PORT" \
     > "$SCRIPT_DIR/comfy.log" 2>&1 &
 
 COMFY_PID=$!
@@ -400,8 +427,14 @@ fi
 # ==============================
 echo "[INFO] Starting Cloudflared..."
 
-pkill -x cloudflared 2>/dev/null || true
-# foward port 9999 nginx -> comfyui 8189
+CLOUDFLARED_PIDS="$(pgrep -f 'cloudflared tunnel.*127\.0\.0\.1:9999' 2>/dev/null || true)"
+if [ -n "$CLOUDFLARED_PIDS" ]; then
+    while read -r PID; do
+        [ -n "$PID" ] && kill -9 "$PID" || true
+    done <<< "$CLOUDFLARED_PIDS"
+fi
+
+# Forward port 9999 nginx -> ComfyUI 8189.
 nohup cloudflared tunnel \
     --url http://127.0.0.1:9999 \
     > "$SCRIPT_DIR/cf.log" 2>&1 &
