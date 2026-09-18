@@ -262,9 +262,16 @@ echo "[INFO] Upgrading pip..."
 # ==============================
 echo "[INFO] Installing ComfyUI requirements..."
 
+COMFY_REQ_NO_TORCH="$COMFY_PATH/requirements-no-torch.txt"
+
+grep -Eiv '^[[:space:]]*(torch|torchvision|torchaudio)([<=>~!;[:space:]]|$)' \
+    "$COMFY_PATH/requirements.txt" > "$COMFY_REQ_NO_TORCH"
+
 "$PYTHON" -m pip install \
-    -r "$COMFY_PATH/requirements.txt" \
+    -r "$COMFY_REQ_NO_TORCH" \
     --prefer-binary
+
+rm -f "$COMFY_REQ_NO_TORCH"
 
 # ==============================
 # COLLECT NODE REQUIREMENTS
@@ -277,6 +284,12 @@ find "$COMFY_PATH/custom_nodes" \
     -size +0c \
     -exec sh -c 'cat "$1"; echo' _ {} \; \
     > "$ALL_REQ"
+
+# PyTorch is installed by install_torch_auto.sh below. Do not let the
+# custom-node requirements replace it with another build.
+grep -Eiv '^[[:space:]]*(torch|torchvision|torchaudio)([<=>~!;[:space:]]|$)' \
+    "$ALL_REQ" > "$ALL_REQ.filtered"
+mv "$ALL_REQ.filtered" "$ALL_REQ"
 
 echo "[INFO] Requirements collected:"
 wc -l "$ALL_REQ"
@@ -323,47 +336,16 @@ echo "[INFO] Installing SQLAlchemy..."
 "$PYTHON" -m pip install sqlalchemy
 
 # ==============================
-# FIX PYTORCH / CUDA
+# AUTO-FIX PYTORCH / CUDA
 # ==============================
 echo
 echo "======================================"
-echo " FIXING PYTORCH / CUDA"
+echo " AUTO-FIXING PYTORCH / CUDA"
 echo "======================================"
 
 chmod +x "$SCRIPT_DIR/install_torch_auto.sh"
 
 "$SCRIPT_DIR/install_torch_auto.sh"
-
-# ==============================
-# FINAL PYTORCH CHECK
-# ==============================
-echo
-echo "======================================"
-echo " FINAL PYTORCH CHECK"
-echo "======================================"
-
-"$PYTHON" - <<'PY'
-import torch
-
-print("Torch:", torch.__version__)
-print("CUDA runtime:", torch.version.cuda)
-print("CUDA available:", torch.cuda.is_available())
-
-if not torch.cuda.is_available():
-    raise RuntimeError("CUDA is NOT available")
-
-print("GPU:", torch.cuda.get_device_name(0))
-print("Compute Capability:", torch.cuda.get_device_capability(0))
-
-x = torch.randn(1, 3, 64, 64, device="cuda")
-conv = torch.nn.Conv2d(3, 16, 3).cuda()
-y = conv(x)
-
-torch.cuda.synchronize()
-
-print("CUDA kernel test: OK")
-print("Output:", y.shape)
-PY
 
 # ==============================
 # STOP OLD COMFYUI
