@@ -339,16 +339,52 @@ echo "[INFO] Installing SQLAlchemy..."
 "$PYTHON" -m pip install sqlalchemy
 
 # ==============================
-# AUTO-FIX PYTORCH / CUDA
+# CHECK / INSTALL PYTORCH
 # ==============================
 echo
 echo "======================================"
-echo " AUTO-FIXING PYTORCH / CUDA"
+echo " CHECKING PYTORCH / CUDA"
 echo "======================================"
 
-chmod +x "$SCRIPT_DIR/install_torch_auto.sh"
+if TORCH_INFO="$("$PYTHON" -c '
+import torch
 
-"$SCRIPT_DIR/install_torch_auto.sh"
+if not torch.cuda.is_available():
+    raise RuntimeError("CUDA is not available")
+
+torch.zeros(1, device="cuda")
+torch.cuda.synchronize()
+print(f"PyTorch {torch.__version__}, CUDA {torch.version.cuda}, GPU {torch.cuda.get_device_name(0)}")
+' 2>&1)"
+then
+    echo "[INFO] Existing PyTorch installation is working."
+    echo "[INFO] $TORCH_INFO"
+else
+    echo "[INFO] PyTorch check failed; running the CUDA installer."
+    echo "$TORCH_INFO"
+
+    chmod +x "$SCRIPT_DIR/install_torch_auto.sh"
+    "$SCRIPT_DIR/install_torch_auto.sh"
+fi
+
+if TORCHAUDIO_INFO="$("$PYTHON" -c '
+import torchaudio
+print(f"torchaudio {torchaudio.__version__}")
+' 2>&1)"
+then
+    echo "[INFO] Existing torchaudio installation is working."
+    echo "[INFO] $TORCHAUDIO_INFO"
+else
+    TORCHAUDIO_VERSION="$("$PYTHON" -c 'import torch; print(torch.__version__.split("+")[0]')"
+    echo "[INFO] torchaudio is missing or broken; installing version $TORCHAUDIO_VERSION."
+    echo "$TORCHAUDIO_INFO"
+
+    "$PYTHON" -m pip install \
+        "torchaudio==$TORCHAUDIO_VERSION" \
+        --index-url https://pypi.org/simple
+
+    "$PYTHON" -c 'import torchaudio; print(f"torchaudio {torchaudio.__version__}")'
+fi
 
 # ==============================
 # STOP PYTHON PROCESSES
