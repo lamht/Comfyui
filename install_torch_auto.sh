@@ -203,12 +203,11 @@ if [ "$ARCH" = "Volta" ]; then
         "torchvision==0.29.0" \
         --index-url https://download.pytorch.org/whl/cu126
 
-    # The cu126 index and PyPI have no torchaudio 2.14 wheel.
-    # Keep the V100 torch stack intact and install the latest available
-    # torchaudio wheel without allowing pip to downgrade torch.
+    # Use the latest torchaudio wheel built for the same CUDA 12.6 runtime.
+    # Keep the V100 torch stack intact and do not allow pip to downgrade it.
     "$PYTHON" -m pip install \
-        "torchaudio==2.11.0" \
-        --index-url https://pypi.org/simple \
+        "torchaudio==2.11.0+cu126" \
+        --index-url https://download.pytorch.org/whl/cu126 \
         --no-deps
 
     "$PYTHON" -c 'import torchaudio; print(f"torchaudio {torchaudio.__version__}")'
