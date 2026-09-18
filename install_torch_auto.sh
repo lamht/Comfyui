@@ -140,6 +140,29 @@ echo "Compute Capability:"
 echo "  $CC"
 
 # --------------------------------------------------
+# Select the expected PyTorch runtime
+# --------------------------------------------------
+
+if [ "$ARCH" = "Volta" ]; then
+    EXPECTED_TORCH_VERSION="2.14.0"
+    EXPECTED_TORCHVISION_VERSION="0.29.0"
+    EXPECTED_TORCH_CUDA="12.6"
+    EXPECTED_TORCHAUDIO_VERSION="2.11.0"
+elif [ "$ARCH" != "Unknown" ]; then
+    EXPECTED_TORCH_VERSION=""
+    EXPECTED_TORCHVISION_VERSION=""
+    EXPECTED_TORCH_CUDA="13.0"
+    EXPECTED_TORCHAUDIO_VERSION=""
+else
+    echo
+    echo "ERROR: Unsupported / unknown NVIDIA GPU:"
+    echo "  $GPU_NAME"
+    echo
+    echo "Refusing to install a random PyTorch build."
+    exit 1
+fi
+
+# --------------------------------------------------
 # Reuse a healthy existing PyTorch stack
 # --------------------------------------------------
 
@@ -148,14 +171,38 @@ echo "=============================================="
 echo " Checking existing PyTorch packages"
 echo "=============================================="
 
-if EXISTING_STACK_INFO="$("$PYTHON" - <<'PY'
+if EXISTING_STACK_INFO="$(
+    EXPECTED_TORCH_VERSION="$EXPECTED_TORCH_VERSION" \
+    EXPECTED_TORCHVISION_VERSION="$EXPECTED_TORCHVISION_VERSION" \
+    EXPECTED_TORCH_CUDA="$EXPECTED_TORCH_CUDA" \
+    EXPECTED_TORCHAUDIO_VERSION="$EXPECTED_TORCHAUDIO_VERSION" \
+    "$PYTHON" - <<'PY'
 import importlib.util
+import os
 import torch
 import torchvision
 import torchaudio
 
+expected_torch = os.environ["EXPECTED_TORCH_VERSION"]
+expected_torchvision = os.environ["EXPECTED_TORCHVISION_VERSION"]
+expected_cuda = os.environ["EXPECTED_TORCH_CUDA"]
+expected_torchaudio = os.environ["EXPECTED_TORCHAUDIO_VERSION"]
+
 if not torch.cuda.is_available():
     raise RuntimeError("CUDA is not available")
+
+if expected_torch and not torch.__version__.split("+")[0] == expected_torch:
+    raise RuntimeError(f"expected torch {expected_torch}, found {torch.__version__}")
+if expected_torchvision and not torchvision.__version__.split("+")[0] == expected_torchvision:
+    raise RuntimeError(
+        f"expected torchvision {expected_torchvision}, found {torchvision.__version__}"
+    )
+if expected_cuda and torch.version.cuda != expected_cuda:
+    raise RuntimeError(f"expected CUDA {expected_cuda}, found {torch.version.cuda}")
+if expected_torchaudio and not torchaudio.__version__.split("+")[0] == expected_torchaudio:
+    raise RuntimeError(
+        f"expected torchaudio {expected_torchaudio}, found {torchaudio.__version__}"
+    )
 
 torch.zeros(1, device="cuda")
 torch.cuda.synchronize()
@@ -201,7 +248,8 @@ else:
     print(f"xformers   : {getattr(xformers, '__version__', 'installed')}")
     print("xformers   : attention OK")
 PY
- 2>&1)"
+    2>&1
+)"
 then
     echo "[INFO] Existing PyTorch stack is healthy; skipping reinstall."
     echo "$EXISTING_STACK_INFO"
@@ -472,7 +520,10 @@ echo "=============================================="
 echo " pip dependency check"
 echo "=============================================="
 
-"$PYTHON" -m pip check || true
+if ! "$PYTHON" -m pip check; then
+    echo "[ERROR] pip dependency check failed."
+    exit 1
+fi
 
 # --------------------------------------------------
 # Final information
