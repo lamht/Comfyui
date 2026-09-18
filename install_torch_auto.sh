@@ -140,6 +140,78 @@ echo "Compute Capability:"
 echo "  $CC"
 
 # --------------------------------------------------
+# Reuse a healthy existing PyTorch stack
+# --------------------------------------------------
+
+echo
+echo "=============================================="
+echo " Checking existing PyTorch packages"
+echo "=============================================="
+
+if EXISTING_STACK_INFO="$("$PYTHON" - <<'PY'
+import importlib.util
+import torch
+import torchvision
+import torchaudio
+
+if not torch.cuda.is_available():
+    raise RuntimeError("CUDA is not available")
+
+torch.zeros(1, device="cuda")
+torch.cuda.synchronize()
+
+boxes = torch.tensor(
+    [[0, 0, 10, 10], [1, 1, 9, 9]],
+    dtype=torch.float32,
+    device="cuda",
+)
+scores = torch.tensor([0.9, 0.8], dtype=torch.float32, device="cuda")
+keep = torchvision.ops.nms(boxes, scores, 0.5)
+torch.cuda.synchronize()
+if keep.numel() != 1:
+    raise RuntimeError(f"torchvision NMS returned {keep.numel()} boxes")
+
+waveform = torch.randn(1, 160, dtype=torch.float32)
+resampled = torchaudio.functional.resample(waveform, 16000, 8000)
+if resampled.shape[-1] != 80:
+    raise RuntimeError(f"torchaudio resample returned shape {tuple(resampled.shape)}")
+
+print(f"torch       : {torch.__version__}")
+print(f"torchvision : {torchvision.__version__}")
+print(f"torchaudio  : {torchaudio.__version__}")
+print(f"CUDA        : {torch.version.cuda}")
+print(f"GPU         : {torch.cuda.get_device_name(0)}")
+print("torchvision : CUDA NMS OK")
+print("torchaudio  : resample OK")
+
+if importlib.util.find_spec("xformers") is None:
+    print("xformers   : not installed (optional)")
+else:
+    import xformers
+    from xformers.ops import memory_efficient_attention
+
+    query = torch.randn(1, 2, 4, 8, device="cuda", dtype=torch.float16)
+    key = torch.randn(1, 2, 4, 8, device="cuda", dtype=torch.float16)
+    value = torch.randn(1, 2, 4, 8, device="cuda", dtype=torch.float16)
+    attended = memory_efficient_attention(query, key, value)
+    torch.cuda.synchronize()
+    if attended.shape != query.shape:
+        raise RuntimeError(f"xformers returned shape {tuple(attended.shape)}")
+
+    print(f"xformers   : {getattr(xformers, '__version__', 'installed')}")
+    print("xformers   : attention OK")
+PY
+ 2>&1)"
+then
+    echo "[INFO] Existing PyTorch stack is healthy; skipping reinstall."
+    echo "$EXISTING_STACK_INFO"
+    exit 0
+else
+    echo "[INFO] Existing PyTorch stack is missing or unhealthy."
+    echo "$EXISTING_STACK_INFO"
+fi
+
+# --------------------------------------------------
 # Upgrade packaging tools
 # --------------------------------------------------
 
@@ -412,13 +484,25 @@ echo " INSTALLATION COMPLETE"
 echo "=============================================="
 
 "$PYTHON" - <<'PY'
+import importlib.util
 import torch
+import torchvision
+import torchaudio
 
 print()
 print("PyTorch :", torch.__version__)
+print("TorchVision :", torchvision.__version__)
+print("TorchAudio  :", torchaudio.__version__)
 print("CUDA    :", torch.version.cuda)
 print("GPU     :", torch.cuda.get_device_name(0))
 print("CC      :", torch.cuda.get_device_capability(0))
+
+if importlib.util.find_spec("xformers") is not None:
+    import xformers
+    print("xformers :", getattr(xformers, "__version__", "installed"))
+else:
+    print("xformers : not installed (optional)")
+
 print()
 PY
 
