@@ -375,13 +375,14 @@ then
     echo "[INFO] Existing torchaudio installation is working."
     echo "[INFO] $TORCHAUDIO_INFO"
 else
-    TORCHAUDIO_VERSION="$("$PYTHON" -c 'import torch; print(torch.__version__.split("+")[0]')"
+    TORCHAUDIO_VERSION="2.11.0"
     echo "[INFO] torchaudio is missing or broken; installing version $TORCHAUDIO_VERSION."
     echo "$TORCHAUDIO_INFO"
 
     "$PYTHON" -m pip install \
         "torchaudio==$TORCHAUDIO_VERSION" \
-        --index-url https://pypi.org/simple
+        --index-url https://pypi.org/simple \
+        --no-deps
 
     "$PYTHON" -c 'import torchaudio; print(f"torchaudio {torchaudio.__version__}")'
 fi

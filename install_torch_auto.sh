@@ -203,12 +203,15 @@ if [ "$ARCH" = "Volta" ]; then
         "torchvision==0.29.0" \
         --index-url https://download.pytorch.org/whl/cu126
 
-    # The cu126 index has no torchaudio wheel for this release.
-    # The PyPI wheel uses the installed torch runtime and is required
-    # by current ComfyUI audio VAE imports.
+    # The cu126 index and PyPI have no torchaudio 2.14 wheel.
+    # Keep the V100 torch stack intact and install the latest available
+    # torchaudio wheel without allowing pip to downgrade torch.
     "$PYTHON" -m pip install \
-        "torchaudio==2.14.0" \
-        --index-url https://pypi.org/simple
+        "torchaudio==2.11.0" \
+        --index-url https://pypi.org/simple \
+        --no-deps
+
+    "$PYTHON" -c 'import torchaudio; print(f"torchaudio {torchaudio.__version__}")'
 
     echo
     echo "V100 PyTorch installation completed."
