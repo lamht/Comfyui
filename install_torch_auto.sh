@@ -93,15 +93,15 @@ echo "Compute Capability: $CC"
 # --------------------------------------------------
 
 if [ "$ARCH" = "Volta" ]; then
-    # PyTorch 2.4.1 support for Python 3.12, CUDA 12.1, and torch.library.custom_op
-    EXPECTED_TORCH_VERSION="2.4.1"
+    # PyTorch 2.5.1 support for Python 3.12, CUDA 12.1, and torch.library.custom_op
+    EXPECTED_TORCH_VERSION="2.5.1"
     EXPECTED_TORCHVISION_VERSION="0.19.1"
-    EXPECTED_TORCHAUDIO_VERSION="2.4.1"
+    EXPECTED_TORCHAUDIO_VERSION="2.5.1"
     EXPECTED_TORCH_CUDA="12.1"
     
-    TORCH_PKG="torch==2.4.1+cu121"
+    TORCH_PKG="torch==2.5.1+cu121"
     TORCHVISION_PKG="torchvision==0.19.1+cu121"
-    TORCHAUDIO_PKG="torchaudio==2.4.1+cu121"
+    TORCHAUDIO_PKG="torchaudio==2.5.1+cu121"
     INDEX_URL="https://download.pytorch.org/whl/cu121"
 
 elif [ "$ARCH" != "Unknown" ]; then
