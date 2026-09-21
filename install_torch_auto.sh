@@ -93,15 +93,15 @@ echo "Compute Capability: $CC"
 # --------------------------------------------------
 
 if [ "$ARCH" = "Volta" ]; then
-    # Python 3.12 requires PyTorch >= 2.2.0
-    EXPECTED_TORCH_VERSION="2.2.2"
-    EXPECTED_TORCHVISION_VERSION="0.17.2"
-    EXPECTED_TORCHAUDIO_VERSION="2.2.2"
+    # PyTorch 2.4.1 support for Python 3.12, CUDA 12.1, and torch.library.custom_op
+    EXPECTED_TORCH_VERSION="2.4.1"
+    EXPECTED_TORCHVISION_VERSION="0.19.1"
+    EXPECTED_TORCHAUDIO_VERSION="2.4.1"
     EXPECTED_TORCH_CUDA="12.1"
     
-    TORCH_PKG="torch==2.2.2+cu121"
-    TORCHVISION_PKG="torchvision==0.17.2+cu121"
-    TORCHAUDIO_PKG="torchaudio==2.2.2+cu121"
+    TORCH_PKG="torch==2.4.1+cu121"
+    TORCHVISION_PKG="torchvision==0.19.1+cu121"
+    TORCHAUDIO_PKG="torchaudio==2.4.1+cu121"
     INDEX_URL="https://download.pytorch.org/whl/cu121"
 
 elif [ "$ARCH" != "Unknown" ]; then
@@ -136,6 +136,7 @@ if EXPECTED_TORCH_VERSION="$EXPECTED_TORCH_VERSION" \
    EXPECTED_TORCHAUDIO_VERSION="$EXPECTED_TORCHAUDIO_VERSION" \
    "$PYTHON" - <<'PY'
 import os
+import numpy as np
 import torch
 import torchvision
 import torchaudio
@@ -144,6 +145,11 @@ expected_torch = os.environ.get("EXPECTED_TORCH_VERSION", "")
 expected_torchvision = os.environ.get("EXPECTED_TORCHVISION_VERSION", "")
 expected_cuda = os.environ.get("EXPECTED_TORCH_CUDA", "")
 expected_torchaudio = os.environ.get("EXPECTED_TORCHAUDIO_VERSION", "")
+
+# Verify NumPy version constraint (<2.0.0)
+numpy_major = int(np.__version__.split(".")[0])
+if numpy_major >= 2:
+    raise RuntimeError(f"NumPy version must be < 2.0.0, found {np.__version__}")
 
 if not torch.cuda.is_available():
     raise RuntimeError("CUDA is not available")
@@ -157,12 +163,17 @@ if expected_cuda and torch.version.cuda != expected_cuda:
 if expected_torchaudio and torchaudio.__version__.split("+")[0] != expected_torchaudio:
     raise RuntimeError(f"expected torchaudio {expected_torchaudio}, found {torchaudio.__version__}")
 
+# Verify critical API attribute for comfy_kitchen
+if not hasattr(torch.library, "custom_op"):
+    raise RuntimeError("torch.library does not have custom_op attribute")
+
 torch.zeros(1, device="cuda")
 torch.cuda.synchronize()
 
 print(f"torch       : {torch.__version__}")
 print(f"torchvision : {torchvision.__version__}")
 print(f"torchaudio  : {torchaudio.__version__}")
+print(f"numpy       : {np.__version__}")
 print(f"CUDA        : {torch.version.cuda}")
 print(f"GPU         : {torch.cuda.get_device_name(0)}")
 PY
@@ -176,12 +187,12 @@ else
 fi
 
 # --------------------------------------------------
-# Remove existing broken PyTorch stack
+# Remove existing broken PyTorch stack & incompatible dependencies
 # --------------------------------------------------
 
 echo
 echo "=============================================="
-echo " Cleaning old PyTorch packages"
+echo " Cleaning old PyTorch & NumPy packages"
 echo "=============================================="
 
 "$PYTHON" -m pip uninstall -y \
@@ -189,10 +200,11 @@ echo "=============================================="
     torchvision \
     torchaudio \
     xformers \
-    triton 2>/dev/null || true
+    triton \
+    pynvml 2>/dev/null || true
 
 # --------------------------------------------------
-# Install target PyTorch Stack
+# Install target PyTorch Stack & Lock NumPy < 2
 # --------------------------------------------------
 
 echo
@@ -201,6 +213,7 @@ echo " Installing fresh PyTorch stack for $ARCH"
 echo "=============================================="
 
 "$PYTHON" -m pip install --upgrade pip setuptools wheel
+"$PYTHON" -m pip install "numpy<2" nvidia-ml-py
 
 "$PYTHON" -m pip install \
     "$TORCH_PKG" \
