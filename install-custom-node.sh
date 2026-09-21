@@ -162,8 +162,6 @@ echo "[INFO] Removing old custom nodes..."
 
 rm -rf "$COMFY_PATH/custom_nodes/rgthree-comfy"
 rm -rf "$COMFY_PATH/custom_nodes/ComfyUI-Crystools"
-rm -rf "$COMFY_PATH/custom_nodes/comfyui-manager"
-rm -rf "$COMFY_PATH/custom_nodes/ComfyUI-Manager"
 rm -rf "$COMFY_PATH/custom_nodes/ComfyUI-Inpaint-CropAndStitch"
 rm -rf "$COMFY_PATH/custom_nodes/ComfyUI-Dwpose-Tensorrt"
 rm -rf "$COMFY_PATH/custom_nodes/batch_image_loader"
@@ -215,10 +213,6 @@ clone_node \
     "$COMFY_PATH/custom_nodes/rgthree-comfy"
 
 clone_node \
-    "https://github.com/ltdrdata/ComfyUI-Manager.git" \
-    "$COMFY_PATH/custom_nodes/comfyui-manager"
-
-clone_node \
     "https://github.com/crystian/ComfyUI-Crystools.git" \
     "$COMFY_PATH/custom_nodes/ComfyUI-Crystools"
 
@@ -229,15 +223,7 @@ clone_node \
 # ==============================
 # PYTHON / VENV
 # ==============================
-PYTHON="$COMFY_PATH/venv/bin/python"
-
-if [ ! -x "$PYTHON" ]; then
-
-    echo "[INFO] Creating virtual environment..."
-
-    python3 -m venv "$COMFY_PATH/venv"
-
-fi
+PYTHON="python3"
 
 echo "[INFO] Venv Python:"
 "$PYTHON" --version
@@ -290,28 +276,7 @@ mv "$ALL_REQ.filtered" "$ALL_REQ"
 echo "[INFO] Requirements collected:"
 wc -l "$ALL_REQ"
 
-# ==============================
-# COMPILE REQUIREMENTS
-# ==============================
-echo "[INFO] Running pip-compile..."
-
-if "$PYTHON" -m piptools compile \
-    "$ALL_REQ" \
-    -o "$FINAL_REQ" \
-    --resolver=backtracking \
-    2>&1 | tee -a "$LOG_FILE"
-then
-
-    echo "[INFO] pip-compile success"
-
-else
-
-    echo "[WARNING] pip-compile failed."
-    echo "[WARNING] Using raw requirements.txt"
-
-    cp "$ALL_REQ" "$FINAL_REQ"
-
-fi
+cp "$ALL_REQ" "$FINAL_REQ"
 
 # ==============================
 # INSTALL NODE REQUIREMENTS
@@ -330,55 +295,6 @@ echo "[INFO] Installing custom node requirements..."
 echo "[INFO] Installing SQLAlchemy..."
 
 "$PYTHON" -m pip install sqlalchemy
-
-# ==============================
-# CHECK / INSTALL PYTORCH
-# ==============================
-echo
-echo "======================================"
-echo " CHECKING PYTORCH / CUDA"
-echo "======================================"
-
-if TORCH_INFO="$("$PYTHON" -c '
-import torch
-
-if not torch.cuda.is_available():
-    raise RuntimeError("CUDA is not available")
-
-torch.zeros(1, device="cuda")
-torch.cuda.synchronize()
-print(f"PyTorch {torch.__version__}, CUDA {torch.version.cuda}, GPU {torch.cuda.get_device_name(0)}")
-' 2>&1)"
-then
-    echo "[INFO] Existing PyTorch installation is working."
-    echo "[INFO] $TORCH_INFO"
-else
-    echo "[INFO] PyTorch check failed; running the CUDA installer."
-    echo "$TORCH_INFO"
-
-    chmod +x "$SCRIPT_DIR/install_torch_auto.sh"
-    "$SCRIPT_DIR/install_torch_auto.sh"
-fi
-
-if TORCHAUDIO_INFO="$("$PYTHON" -c '
-import torchaudio
-print(f"torchaudio {torchaudio.__version__}")
-' 2>&1)"
-then
-    echo "[INFO] Existing torchaudio installation is working."
-    echo "[INFO] $TORCHAUDIO_INFO"
-else
-    TORCHAUDIO_VERSION="2.11.0+cu126"
-    echo "[INFO] torchaudio is missing or broken; installing version $TORCHAUDIO_VERSION."
-    echo "$TORCHAUDIO_INFO"
-
-    "$PYTHON" -m pip install \
-        "torchaudio==$TORCHAUDIO_VERSION" \
-        --index-url https://download.pytorch.org/whl/cu126 \
-        --no-deps
-
-    "$PYTHON" -c 'import torchaudio; print(f"torchaudio {torchaudio.__version__}")'
-fi
 
 # ==============================
 # STOP PYTHON PROCESSES
