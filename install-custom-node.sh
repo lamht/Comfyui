@@ -113,7 +113,8 @@ if [ -f "$SCRIPT_DIR/nginx.conf" ]; then
     nginx -t
 
     echo "[INFO] Starting/reloading nginx..."
-    nginx -s reload
+    service nginx start || true
+    nginx -s reload || echo "[WARNING] Failed to reload nginx, continuing..."
 
 else
 
