@@ -1,5 +1,6 @@
+
 #!/bin/bash
-set -euo pipefail
+set -Eeuo pipefail
 
 # ==============================
 # ROOT CHECK
@@ -14,7 +15,7 @@ fi
 # ==============================
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-if [ -z "$COMFY_PATH" ]; then
+if [ -z "${COMFY_PATH:-}" ]; then
     export COMFY_PATH="$SCRIPT_DIR/ComfyUI"
     echo "[INFO] COMFY_PATH set to: $COMFY_PATH"
 else
@@ -24,6 +25,8 @@ fi
 ALL_REQ="$COMFY_PATH/all.txt"
 FINAL_REQ="$COMFY_PATH/final.txt"
 LOG_FILE="$COMFY_PATH/install.log"
+
+mkdir -p "$COMFY_PATH"
 
 echo "Using ComfyUI at: $COMFY_PATH"
 
@@ -106,11 +109,11 @@ if [ -f "$SCRIPT_DIR/nginx.conf" ]; then
     cp "$SCRIPT_DIR/nginx.conf" /etc/nginx/nginx.conf
 
     echo "[INFO] Testing nginx configuration..."
+
     nginx -t
 
     echo "[INFO] Starting/reloading nginx..."
-
-    nginx -s reload 2>/dev/null || nginx
+    nginx -s reload
 
 else
 
@@ -133,11 +136,13 @@ git config --global core.compression 0
 # ==============================
 clone_node() {
 
-    local URL="$1"
-    local DEST="$2"
-    local TAG="$3"
+    local URL="${1:?Missing repository URL}"
+    local DEST="${2:?Missing destination path}"
+    local TAG="${3:-}"
 
     echo "[INFO] Installing: $DEST"
+
+    mkdir -p "$(dirname "$DEST")"
 
     if [ -d "$DEST/.git" ]; then
 
@@ -149,13 +154,22 @@ clone_node() {
         }
 
     else
-        local tag_arg=""
+
+        local tag_arg=()
+
         if [ -n "$TAG" ]; then
-            tag_arg="--branch $TAG"
+            tag_arg=(--branch "$TAG")
         fi
-        git clone --depth 1 $tag_arg "$URL" "$DEST" || {
+
+        git clone \
+            --depth 1 \
+            "${tag_arg[@]}" \
+            "$URL" \
+            "$DEST" || {
+
             echo "[WARNING] Failed to clone $URL"
             echo "[WARNING] Continuing without this custom node."
+
         }
 
     fi
@@ -170,7 +184,8 @@ clone_node \
 
 clone_node \
     "https://github.com/crystian/ComfyUI-Crystools.git" \
-    "$COMFY_PATH/custom_nodes/ComfyUI-Crystools"
+    "$COMFY_PATH/custom_nodes/ComfyUI-Crystools" \
+    "V1.12.0"
 
 clone_node \
     "https://github.com/lquesada/ComfyUI-Inpaint-CropAndStitch.git" \
@@ -201,10 +216,12 @@ find "$COMFY_PATH/custom_nodes" \
     -exec sh -c 'cat "$1"; echo' _ {} \; \
     > "$ALL_REQ"
 
-# PyTorch is installed by install_torch_auto.sh below. Do not let the
-# custom-node requirements replace it with another build.
-grep -Eiv '^[[:space:]]*(torch|torchvision|torchaudio|numpy)([<=>~!;[:space:]]|$)' \
+# Remove PyTorch / NumPy packages
+# They are installed separately by install_torch_auto.sh.
+grep -Eiv \
+    '^[[:space:]]*(torch|torchvision|torchaudio|numpy)([<=>~!;[:space:]]|$)' \
     "$ALL_REQ" > "$ALL_REQ.filtered" || [ $? -eq 1 ]
+
 mv "$ALL_REQ.filtered" "$ALL_REQ"
 
 echo "[INFO] Requirements collected:"
@@ -217,10 +234,10 @@ cp "$ALL_REQ" "$FINAL_REQ"
 # ==============================
 echo "[INFO] Installing custom node requirements..."
 
-"$PYTHON" -m pip install \
-    -r "$FINAL_REQ" \
-    --prefer-binary \
-    2>&1 | tee -a "$LOG_FILE"
+# "$PYTHON" -m pip install \
+#     -r "$FINAL_REQ" \
+#     --prefer-binary \
+#     2>&1 | tee -a "$LOG_FILE"
 
 # ==============================
 # STOP OLD COMFYUI
@@ -228,13 +245,22 @@ echo "[INFO] Installing custom node requirements..."
 echo "[INFO] Stopping old ComfyUI..."
 
 COMFY_PORT=8189
+
 PIDS="$(lsof -t -i:"$COMFY_PORT" 2>/dev/null || true)"
 
 if [ -n "$PIDS" ]; then
+
     while read -r PID; do
-        [ -n "$PID" ] && kill -9 "$PID" || true
+
+        if [ -n "$PID" ]; then
+            echo "[INFO] Killing PID: $PID"
+            kill -9 "$PID" || true
+        fi
+
     done <<< "$PIDS"
+
     sleep 2
+
 fi
 
 # ==============================
@@ -273,11 +299,21 @@ fi
 # ==============================
 echo "[INFO] Starting Cloudflared..."
 
-CLOUDFLARED_PIDS="$(pgrep -f 'cloudflared tunnel.*127\.0\.0\.1:9999' 2>/dev/null || true)"
+CLOUDFLARED_PIDS="$(
+    pgrep -f 'cloudflared tunnel.*127\.0\.0\.1:9999' 2>/dev/null || true
+)"
+
 if [ -n "$CLOUDFLARED_PIDS" ]; then
+
     while read -r PID; do
-        [ -n "$PID" ] && kill -9 "$PID" || true
+
+        if [ -n "$PID" ]; then
+            echo "[INFO] Killing Cloudflared PID: $PID"
+            kill -9 "$PID" || true
+        fi
+
     done <<< "$CLOUDFLARED_PIDS"
+
 fi
 
 # Forward port 9999 nginx -> ComfyUI 8189.
@@ -307,9 +343,9 @@ echo
 echo "======================================"
 echo " INSTALLATION COMPLETED"
 echo "======================================"
-echo "ComfyUI       : http://0.0.0.0:8189"
-echo "ComfyUI PID   : $COMFY_PID"
+echo "ComfyUI        : http://0.0.0.0:8189"
+echo "ComfyUI PID    : $COMFY_PID"
 echo "Cloudflared PID: $CF_PID"
-echo "ComfyUI log   : $SCRIPT_DIR/comfy.log"
+echo "ComfyUI log    : $SCRIPT_DIR/comfy.log"
 echo "Cloudflared log: $SCRIPT_DIR/cf.log"
 echo "======================================"
