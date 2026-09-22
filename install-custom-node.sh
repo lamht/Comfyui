@@ -265,11 +265,6 @@ echo "[INFO] Starting ComfyUI..."
 
 cd "$COMFY_PATH"
 
-export PYTHONUNBUFFERED=1
-export PYTHONPATH="$COMFY_PATH"
-export CUDA_VISIBLE_DEVICES=0
-export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
-
 nohup "$PYTHON" \
     "$COMFY_PATH/main.py" \
     --listen 0.0.0.0 \
