@@ -30,7 +30,14 @@ fi
 # ==============================
 # BASE PATH
 # ==============================
-export BASE="$(dirname "$0")/ComfyUI/models"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+if [ -z "$COMFY_PATH" ]; then
+    export COMFY_PATH="$SCRIPT_DIR/ComfyUI"
+    echo "[INFO] COMFY_PATH set to: $COMFY_PATH"
+else
+    echo "[INFO] COMFY_PATH already set: $COMFY_PATH"
+fi
+export BASE="$COMFY_PATH/models"
 
 mkdir -p $BASE/{loras,checkpoints,clip,vae,upscale_models,facerestore_models}
 

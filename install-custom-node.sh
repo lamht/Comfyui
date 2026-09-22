@@ -14,7 +14,12 @@ fi
 # ==============================
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-export COMFY_PATH="$SCRIPT_DIR/ComfyUI"
+if [ -z "$COMFY_PATH" ]; then
+    export COMFY_PATH="$SCRIPT_DIR/ComfyUI"
+    echo "[INFO] COMFY_PATH set to: $COMFY_PATH"
+else
+    echo "[INFO] COMFY_PATH already set: $COMFY_PATH"
+fi
 
 ALL_REQ="$COMFY_PATH/all.txt"
 FINAL_REQ="$COMFY_PATH/final.txt"
@@ -74,7 +79,8 @@ apt-get install -y \
     build-essential \
     libgl1 \
     libglib2.0-0 \
-    lsof
+    lsof \
+    nginx
 
 # ==============================
 # INSTALL CLOUDFLARED
@@ -91,35 +97,6 @@ dpkg -i "$CLOUDFLARED_DEB" || apt-get install -f -y
 rm -f "$CLOUDFLARED_DEB"
 
 cloudflared --version
-
-# ==============================
-# ADD NGINX REPO
-# ==============================
-echo "[INFO] Adding nginx repository..."
-
-NGINX_CODENAME="$(lsb_release -cs)"
-
-echo "[INFO] Ubuntu codename: $NGINX_CODENAME"
-
-curl -fsSL https://nginx.org/keys/nginx_signing.key | \
-    gpg --dearmor --yes \
-    -o /usr/share/keyrings/nginx-archive-keyring.gpg
-
-cat > /etc/apt/sources.list.d/nginx.list <<EOF
-deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/mainline/ubuntu ${NGINX_CODENAME} nginx
-EOF
-
-cat /etc/apt/sources.list.d/nginx.list
-
-# ==============================
-# UPDATE APT
-# ==============================
-apt-get update
-
-# ==============================
-# INSTALL NGINX
-# ==============================
-apt-get install -y nginx
 
 # ==============================
 # CONFIG NGINX
@@ -142,31 +119,6 @@ else
 fi
 
 # ==============================
-# DOWNLOAD CUSTOM NODES
-# ==============================
-echo "[INFO] Downloading custom nodes..."
-
-CUSTOM_NODES_ZIP="/tmp/custom_nodes.zip"
-
-wget -q -O "$CUSTOM_NODES_ZIP" \
-    "https://www.dropbox.com/scl/fi/ccabj5q3p8go0ht8fkwif/custom_nodes.zip?rlkey=6lh2ok89q00deqm0fgptdv1m7&dl=1"
-
-unzip -o "$CUSTOM_NODES_ZIP" -d "$COMFY_PATH"
-
-rm -f "$CUSTOM_NODES_ZIP"
-
-# ==============================
-# REMOVE OLD NODES
-# ==============================
-echo "[INFO] Removing old custom nodes..."
-
-rm -rf "$COMFY_PATH/custom_nodes/rgthree-comfy"
-rm -rf "$COMFY_PATH/custom_nodes/ComfyUI-Crystools"
-rm -rf "$COMFY_PATH/custom_nodes/ComfyUI-Inpaint-CropAndStitch"
-rm -rf "$COMFY_PATH/custom_nodes/ComfyUI-Dwpose-Tensorrt"
-rm -rf "$COMFY_PATH/custom_nodes/batch_image_loader"
-
-# ==============================
 # GIT SETTINGS
 # ==============================
 echo "[INFO] Configuring git..."
@@ -183,6 +135,7 @@ clone_node() {
 
     local URL="$1"
     local DEST="$2"
+    local TAG="$3"
 
     echo "[INFO] Installing: $DEST"
 
@@ -196,8 +149,11 @@ clone_node() {
         }
 
     else
-
-        git clone --depth 1 "$URL" "$DEST" || {
+        local tag_arg=""
+        if [ -n "$TAG" ]; then
+            tag_arg="--branch $TAG"
+        fi
+        git clone --depth 1 $tag_arg "$URL" "$DEST" || {
             echo "[WARNING] Failed to clone $URL"
             echo "[WARNING] Continuing without this custom node."
         }
@@ -220,6 +176,11 @@ clone_node \
     "https://github.com/lquesada/ComfyUI-Inpaint-CropAndStitch.git" \
     "$COMFY_PATH/custom_nodes/ComfyUI-Inpaint-CropAndStitch"
 
+clone_node \
+    "https://github.com/ltdrdata/ComfyUI-Manager.git" \
+    "$COMFY_PATH/custom_nodes/ComfyUI-Manager" \    
+    "V3.32.5"
+
 # ==============================
 # PYTHON / VENV
 # ==============================
@@ -227,33 +188,6 @@ PYTHON="python3"
 
 echo "[INFO] Venv Python:"
 "$PYTHON" --version
-
-# ==============================
-# UPGRADE PIP
-# ==============================
-echo "[INFO] Upgrading pip..."
-
-"$PYTHON" -m pip install --upgrade \
-    pip \
-    setuptools \
-    wheel \
-    pip-tools
-
-# ==============================
-# COMFYUI REQUIREMENTS
-# ==============================
-echo "[INFO] Installing ComfyUI requirements..."
-
-COMFY_REQ_NO_TORCH="$COMFY_PATH/requirements-no-torch.txt"
-
-grep -Eiv '^[[:space:]]*(torch|torchvision|torchaudio|numpy)([<=>~!;[:space:]]|$)' \
-    "$COMFY_PATH/requirements.txt" > "$COMFY_REQ_NO_TORCH" || [ $? -eq 1 ]
-
-"$PYTHON" -m pip install \
-    -r "$COMFY_REQ_NO_TORCH" \
-    --prefer-binary
-
-rm -f "$COMFY_REQ_NO_TORCH"
 
 # ==============================
 # COLLECT NODE REQUIREMENTS
@@ -286,16 +220,7 @@ echo "[INFO] Installing custom node requirements..."
 "$PYTHON" -m pip install \
     -r "$FINAL_REQ" \
     --prefer-binary \
-    --upgrade-strategy only-if-needed \
     2>&1 | tee -a "$LOG_FILE"
-
-# ==============================
-# SQLALCHEMY
-# ==============================
-echo "[INFO] Installing SQLAlchemy..."
-
-"$PYTHON" -m pip install sqlalchemy
-
 
 # ==============================
 # STOP PYTHON PROCESSES
