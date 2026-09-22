@@ -246,7 +246,7 @@ echo "[INFO] Installing ComfyUI requirements..."
 
 COMFY_REQ_NO_TORCH="$COMFY_PATH/requirements-no-torch.txt"
 
-grep -Eiv '^[[:space:]]*(torch|torchvision|torchaudio)([<=>~!;[:space:]]|$)' \
+grep -Eiv '^[[:space:]]*(torch|torchvision|torchaudio|numpy)([<=>~!;[:space:]]|$)' \
     "$COMFY_PATH/requirements.txt" > "$COMFY_REQ_NO_TORCH" || [ $? -eq 1 ]
 
 "$PYTHON" -m pip install \
@@ -269,7 +269,7 @@ find "$COMFY_PATH/custom_nodes" \
 
 # PyTorch is installed by install_torch_auto.sh below. Do not let the
 # custom-node requirements replace it with another build.
-grep -Eiv '^[[:space:]]*(torch|torchvision|torchaudio)([<=>~!;[:space:]]|$)' \
+grep -Eiv '^[[:space:]]*(torch|torchvision|torchaudio|numpy)([<=>~!;[:space:]]|$)' \
     "$ALL_REQ" > "$ALL_REQ.filtered" || [ $? -eq 1 ]
 mv "$ALL_REQ.filtered" "$ALL_REQ"
 
@@ -295,6 +295,7 @@ echo "[INFO] Installing custom node requirements..."
 echo "[INFO] Installing SQLAlchemy..."
 
 "$PYTHON" -m pip install sqlalchemy
+
 
 # ==============================
 # STOP PYTHON PROCESSES
