@@ -218,8 +218,8 @@ find "$COMFY_PATH/custom_nodes" \
 # Remove PyTorch / NumPy packages
 # They are installed separately by install_torch_auto.sh.
 grep -Eiv \
-    '^[[:space:]]*(torch|torchvision|torchaudio|numpy)([<=>~!;[:space:]]|$)' \
-    "$ALL_REQ" > "$ALL_REQ.filtered" || [ $? -eq 1 ]
+    '^[[:space:]]*(torch|torchvision|torchaudio|numpy|transformers|huggingface-hub|uv|pillow|pil|pillow-simd)([<=>~!;[:space:]@].*|$)' \
+    "$ALL_REQ" > "$ALL_REQ.filtered" || true
 
 mv "$ALL_REQ.filtered" "$ALL_REQ"
 
