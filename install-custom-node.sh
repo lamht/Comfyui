@@ -156,21 +156,19 @@ clone_node() {
 
     else
 
-        local tag_arg=()
+        local clone_args=()
 
         if [ -n "$TAG" ]; then
-            tag_arg=(--branch "$TAG")
+            # Full clone when specifying a tag to guarantee git finds the ref
+            clone_args=(--branch "$TAG")
+        else
+            # Shallow clone for default branch
+            clone_args=(--depth 1)
         fi
 
-        git clone \
-            --depth 1 \
-            "${tag_arg[@]}" \
-            "$URL" \
-            "$DEST" || {
-
+        git clone "${clone_args[@]}" "$URL" "$DEST" || {
             echo "[WARNING] Failed to clone $URL"
             echo "[WARNING] Continuing without this custom node."
-
         }
 
     fi
