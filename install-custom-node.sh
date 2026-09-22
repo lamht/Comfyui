@@ -178,7 +178,7 @@ clone_node \
 
 clone_node \
     "https://github.com/ltdrdata/ComfyUI-Manager.git" \
-    "$COMFY_PATH/custom_nodes/ComfyUI-Manager" \    
+    "$COMFY_PATH/custom_nodes/ComfyUI-Manager" \
     "V3.32.5"
 
 # ==============================
