@@ -182,18 +182,18 @@ clone_node \
     "$COMFY_PATH/custom_nodes/rgthree-comfy"
 
 clone_node \
-    "https://github.com/crystian/ComfyUI-Crystools.git" \
-    "$COMFY_PATH/custom_nodes/ComfyUI-Crystools" \
-    "V1.12.0"
-
-clone_node \
     "https://github.com/lquesada/ComfyUI-Inpaint-CropAndStitch.git" \
     "$COMFY_PATH/custom_nodes/ComfyUI-Inpaint-CropAndStitch"
 
 clone_node \
+    "https://github.com/crystian/ComfyUI-Crystools.git" \
+    "$COMFY_PATH/custom_nodes/ComfyUI-Crystools" \
+    "v1.12.0"
+
+clone_node \
     "https://github.com/ltdrdata/ComfyUI-Manager.git" \
     "$COMFY_PATH/custom_nodes/ComfyUI-Manager" \
-    "V3.32.5"
+    "v3.32.5"
 
 # ==============================
 # PYTHON / VENV
