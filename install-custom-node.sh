@@ -188,12 +188,12 @@ clone_node \
 clone_node \
     "https://github.com/crystian/ComfyUI-Crystools.git" \
     "$COMFY_PATH/custom_nodes/ComfyUI-Crystools" \
-    "v1.12.0"
+    "1.12.0"
 
 clone_node \
     "https://github.com/ltdrdata/ComfyUI-Manager.git" \
     "$COMFY_PATH/custom_nodes/ComfyUI-Manager" \
-    "v3.32.5"
+    "3.32.5"
 
 # ==============================
 # PYTHON / VENV
