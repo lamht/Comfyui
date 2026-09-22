@@ -223,27 +223,6 @@ echo "[INFO] Installing custom node requirements..."
     2>&1 | tee -a "$LOG_FILE"
 
 # ==============================
-# STOP PYTHON PROCESSES
-# ==============================
-echo "[INFO] Stopping existing Python processes..."
-
-PYTHON_PIDS="$(pgrep -f '(^|/)(python|python3)([0-9.]*)($|[[:space:]])' 2>/dev/null || true)"
-
-if [ -n "$PYTHON_PIDS" ]; then
-    while read -r PID; do
-        [ -n "$PID" ] && kill -TERM "$PID" 2>/dev/null || true
-    done <<< "$PYTHON_PIDS"
-    sleep 2
-
-    PYTHON_PIDS="$(pgrep -f '(^|/)(python|python3)([0-9.]*)($|[[:space:]])' 2>/dev/null || true)"
-    if [ -n "$PYTHON_PIDS" ]; then
-        while read -r PID; do
-            [ -n "$PID" ] && kill -KILL "$PID" 2>/dev/null || true
-        done <<< "$PYTHON_PIDS"
-    fi
-fi
-
-# ==============================
 # STOP OLD COMFYUI
 # ==============================
 echo "[INFO] Stopping old ComfyUI..."
