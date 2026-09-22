@@ -228,8 +228,6 @@ wc -l "$ALL_REQ"
 
 cp "$ALL_REQ" "$FINAL_REQ"
 
-$PYTHON -m pip install py-cpuinfo
-
 # ==============================
 # INSTALL NODE REQUIREMENTS
 # ==============================
