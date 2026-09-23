@@ -228,16 +228,17 @@ wc -l "$ALL_REQ"
 
 cp "$ALL_REQ" "$FINAL_REQ"
 
-"$PYTHON" -m pip install py-cpuinfo --break-system-packages
+# "$PYTHON" -m pip install py-cpuinfo --break-system-packages
 # ==============================
 # INSTALL NODE REQUIREMENTS
 # ==============================
 echo "[INFO] Installing custom node requirements..."
 
-# "$PYTHON" -m pip install \
-#     -r "$FINAL_REQ" \
-#     --prefer-binary \
-#     2>&1 | tee -a "$LOG_FILE"
+"$PYTHON" -m pip install \
+    -r "$FINAL_REQ" \
+    --prefer-binary \
+    --break-system-packages \
+    2>&1 | tee -a "$LOG_FILE"
 
 # ==============================
 # STOP OLD COMFYUI
