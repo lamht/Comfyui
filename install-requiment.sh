@@ -20,6 +20,8 @@ ALL_REQ="$COMFY_PATH/all.txt"
 FINAL_REQ="$COMFY_PATH/final.txt"
 LOG_FILE="$COMFY_PATH/install.log"
 
+COMFY_VERSION="0.36.0"
+
 echo "Using ComfyUI at: $COMFY_PATH"
 
 # ==============================
@@ -37,13 +39,6 @@ if [ ! -d "$COMFY_PATH" ]; then
     echo "$COMFY_PATH"
     exit 1
 fi
-
-# ==============================
-# FIX BROKEN NGINX REPOSITORY
-# ==============================
-echo "[INFO] Cleaning old nginx repository..."
-
-rm -f /etc/apt/sources.list.d/nginx.list
 
 # ==============================
 # INITIAL APT UPDATE
@@ -74,6 +69,7 @@ apt-get install -y \
     build-essential \
     libgl1 \
     libglib2.0-0 \
+    nginx \
     lsof
 
 # ==============================
@@ -93,35 +89,6 @@ rm -f "$CLOUDFLARED_DEB"
 cloudflared --version
 
 # ==============================
-# ADD NGINX REPO
-# ==============================
-echo "[INFO] Adding nginx repository..."
-
-NGINX_CODENAME="$(lsb_release -cs)"
-
-echo "[INFO] Ubuntu codename: $NGINX_CODENAME"
-
-curl -fsSL https://nginx.org/keys/nginx_signing.key | \
-    gpg --dearmor --yes \
-    -o /usr/share/keyrings/nginx-archive-keyring.gpg
-
-cat > /etc/apt/sources.list.d/nginx.list <<EOF
-deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/mainline/ubuntu ${NGINX_CODENAME} nginx
-EOF
-
-cat /etc/apt/sources.list.d/nginx.list
-
-# ==============================
-# UPDATE APT
-# ==============================
-apt-get update
-
-# ==============================
-# INSTALL NGINX
-# ==============================
-apt-get install -y nginx
-
-# ==============================
 # CONFIG NGINX
 # ==============================
 if [ -f "$SCRIPT_DIR/nginx.conf" ]; then
@@ -133,6 +100,7 @@ if [ -f "$SCRIPT_DIR/nginx.conf" ]; then
 
     echo "[INFO] Starting/reloading nginx..."
 
+    service nginx start || true
     nginx -s reload 2>/dev/null || nginx
 
 else
@@ -206,6 +174,8 @@ clone_node() {
 
     fi
 }
+# Clone comfyUI
+git clone --depth 1 --branch ${COMFY_VERSION} https://github.com/Comfy-Org/ComfyUI.git
 
 # ==============================
 # INSTALL REQUIRED NODES
@@ -243,24 +213,13 @@ echo "[INFO] Venv Python:"
 "$PYTHON" --version
 
 # ==============================
-# UPGRADE PIP
-# ==============================
-echo "[INFO] Upgrading pip..."
-
-"$PYTHON" -m pip install --upgrade \
-    pip \
-    setuptools \
-    wheel \
-    pip-tools
-
-# ==============================
 # COMFYUI REQUIREMENTS
 # ==============================
 echo "[INFO] Installing ComfyUI requirements..."
 
 COMFY_REQ_NO_TORCH="$COMFY_PATH/requirements-no-torch.txt"
 
-grep -Eiv '^[[:space:]]*(torch|torchvision|torchaudio)([<=>~!;[:space:]]|$)' \
+grep -Eiv '^[[:space:]]*(torch|torchvision|torchaudio|numpy|transformers|huggingface-hub|uv|pillow|pil|pillow-simd)([<=>~!;[:space:]@].*|$)' \
     "$COMFY_PATH/requirements.txt" > "$COMFY_REQ_NO_TORCH" || [ $? -eq 1 ]
 
 "$PYTHON" -m pip install \
@@ -283,8 +242,7 @@ find "$COMFY_PATH/custom_nodes" \
 
 # PyTorch is installed by install_torch_auto.sh below. Do not let the
 # custom-node requirements replace it with another build.
-grep -Eiv '^[[:space:]]*(torch|torchvision|torchaudio)([<=>~!;[:space:]]|$)' \
-    "$ALL_REQ" > "$ALL_REQ.filtered" || [ $? -eq 1 ]
+grep -Eiv '^[[:space:]]*(torch|torchvision|torchaudio|numpy|transformers|huggingface-hub|uv|pillow|pil|pillow-simd)([<=>~!;[:space:]@].*|$)' \
 mv "$ALL_REQ.filtered" "$ALL_REQ"
 
 echo "[INFO] Requirements collected:"
@@ -293,25 +251,7 @@ wc -l "$ALL_REQ"
 # ==============================
 # COMPILE REQUIREMENTS
 # ==============================
-echo "[INFO] Running pip-compile..."
-
-if "$PYTHON" -m piptools compile \
-    "$ALL_REQ" \
-    -o "$FINAL_REQ" \
-    --resolver=backtracking \
-    2>&1 | tee -a "$LOG_FILE"
-then
-
-    echo "[INFO] pip-compile success"
-
-else
-
-    echo "[WARNING] pip-compile failed."
-    echo "[WARNING] Using raw requirements.txt"
-
-    cp "$ALL_REQ" "$FINAL_REQ"
-
-fi
+cp "$ALL_REQ" "$FINAL_REQ"
 
 # ==============================
 # INSTALL NODE REQUIREMENTS
