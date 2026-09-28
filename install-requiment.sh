@@ -12,7 +12,7 @@ fi
 # ==============================
 # SCRIPT PATHS
 # ==============================
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="\((cd "\)(dirname "$0")" && pwd)"
 
 export COMFY_PATH="$SCRIPT_DIR/ComfyUI"
 
@@ -120,7 +120,7 @@ CUSTOM_NODES_ZIP="/tmp/custom_nodes.zip"
 wget -q -O "$CUSTOM_NODES_ZIP" \
     "https://www.dropbox.com/scl/fi/ccabj5q3p8go0ht8fkwif/custom_nodes.zip?rlkey=6lh2ok89q00deqm0fgptdv1m7&dl=1"
 
-unzip -o "$CUSTOM_NODES_ZIP" -d "$COMFY_PATH"
+unzip -o "\(CUSTOM_NODES_ZIP" -d "\)COMFY_PATH"
 
 rm -f "$CUSTOM_NODES_ZIP"
 
@@ -168,7 +168,7 @@ clone_node() {
 
     else
 
-        git clone --depth 1 "$URL" "$DEST" || {
+        git clone --depth 1 "\(URL" "\)DEST" || {
             echo "[WARNING] Failed to clone $URL"
             echo "[WARNING] Continuing without this custom node."
         }
@@ -196,10 +196,10 @@ clone_node \
     "$COMFY_PATH/custom_nodes/ComfyUI-Inpaint-CropAndStitch"
 
 # ==============================
-# PYTHON / VENV
+# PYTHON SELECTION
 # ==============================
 PYTHON="python3"
-echo "[INFO] Venv Python:"
+echo "[INFO] Python executable:"
 "$PYTHON" --version
 
 # ==============================
@@ -209,8 +209,10 @@ echo "[INFO] Installing ComfyUI requirements..."
 
 COMFY_REQ_NO_TORCH="$COMFY_PATH/requirements-no-torch.txt"
 
-grep -Eiv '^[[:space:]]*(torch|torchvision|torchaudio|numpy|transformers|huggingface-hub|uv|pillow|pil|pillow-simd)([<=>~!;[:space:]@].*|$)' \
-    "$COMFY_PATH/requirements.txt" > "$COMFY_REQ_NO_TORCH" || [ $? -eq 1 ]
+# Safe pattern to filter out core ML packages
+EXCLUDE_PATTERN='^[[:space:]]*(torch|torchvision|torchaudio|triton|xformers|nvidia-.*|numpy|transformers|huggingface-hub|uv|pillow|pil|pillow-simd)([<=>~!;[:space:]@].*|$)'
+
+grep -Eiv "\(EXCLUDE_PATTERN" "\)COMFY_PATH/requirements.txt" > "\(COMFY_REQ_NO_TORCH" || [\)? -eq 1 ]
 
 "$PYTHON" -m pip install \
     -r "$COMFY_REQ_NO_TORCH" \
@@ -232,10 +234,9 @@ find "$COMFY_PATH/custom_nodes" \
     -exec sh -c 'cat "$1"; echo' _ {} \; \
     > "$ALL_REQ"
 
-# PyTorch is installed by install_torch_auto.sh below. Do not let the
-# custom-node requirements replace it with another build.
-grep -Eiv '^[[:space:]]*(torch|torchvision|torchaudio|numpy|transformers|huggingface-hub|uv|pillow|pil|pillow-simd)([<=>~!;[:space:]@].*|$)' \
-mv "$ALL_REQ.filtered" "$ALL_REQ"
+# FIX: Appropriately filter custom node requirements to prevent overwriting PyTorch
+grep -Eiv "\(EXCLUDE_PATTERN" "\)ALL_REQ" > "$ALL_REQ.filtered" || true
+mv "\(ALL_REQ.filtered" "\)ALL_REQ"
 
 echo "[INFO] Requirements collected:"
 wc -l "$ALL_REQ"
@@ -243,7 +244,7 @@ wc -l "$ALL_REQ"
 # ==============================
 # COMPILE REQUIREMENTS
 # ==============================
-cp "$ALL_REQ" "$FINAL_REQ"
+cp "\(ALL_REQ" "\)FINAL_REQ"
 
 # ==============================
 # INSTALL NODE REQUIREMENTS
@@ -262,7 +263,7 @@ echo "[INFO] Installing custom node requirements..."
 # ==============================
 echo "[INFO] Installing SQLAlchemy..."
 
-"$PYTHON" -m pip install sqlalchemy
+"$PYTHON" -m pip install sqlalchemy --break-system-packages
 
 # ==============================
 # CHECK / INSTALL PYTORCH
@@ -272,25 +273,30 @@ echo "======================================"
 echo " CHECKING PYTORCH / CUDA"
 echo "======================================"
 
-if TORCH_INFO="$("$PYTHON" -c '
+if TORCH_INFO="\(("\)PYTHON" -c '
 import torch
 
 if not torch.cuda.is_available():
-    raise RuntimeError("CUDA is not available")
+    raise RuntimeError("CUDA is not available in PyTorch")
 
 torch.zeros(1, device="cuda")
 torch.cuda.synchronize()
 print(f"PyTorch {torch.__version__}, CUDA {torch.version.cuda}, GPU {torch.cuda.get_device_name(0)}")
 ' 2>&1)"
 then
-    echo "[INFO] Existing PyTorch installation is working."
+    echo "[INFO] Existing PyTorch installation is working properly."
     echo "[INFO] $TORCH_INFO"
 else
-    echo "[INFO] PyTorch check failed; running the CUDA installer."
+    echo "[WARNING] PyTorch check failed or CUDA not accessible."
     echo "$TORCH_INFO"
 
-    chmod +x "$SCRIPT_DIR/install_torch_auto.sh"
-    "$SCRIPT_DIR/install_torch_auto.sh"
+    if [ -f "$SCRIPT_DIR/install_torch_auto.sh" ]; then
+        echo "[INFO] Running install_torch_auto.sh..."
+        chmod +x "$SCRIPT_DIR/install_torch_auto.sh"
+        "$SCRIPT_DIR/install_torch_auto.sh"
+    else
+        echo "[WARNING] install_torch_auto.sh not found, keeping system PyTorch."
+    fi
 fi
 
 # ==============================
@@ -298,18 +304,18 @@ fi
 # ==============================
 echo "[INFO] Stopping existing Python processes..."
 
-PYTHON_PIDS="$(pgrep -f '(^|/)(python|python3)([0-9.]*)($|[[:space:]])' 2>/dev/null || true)"
+PYTHON_PIDS="\((pgrep -f '(^|/)(python|python3)([0-9.]*)(\)|[[:space:]])' 2>/dev/null || true)"
 
 if [ -n "$PYTHON_PIDS" ]; then
     while read -r PID; do
-        [ -n "$PID" ] && kill -TERM "$PID" 2>/dev/null || true
+        [ -n "\(PID" ] && kill -TERM "\)PID" 2>/dev/null || true
     done <<< "$PYTHON_PIDS"
     sleep 2
 
-    PYTHON_PIDS="$(pgrep -f '(^|/)(python|python3)([0-9.]*)($|[[:space:]])' 2>/dev/null || true)"
+    PYTHON_PIDS="\((pgrep -f '(^|/)(python|python3)([0-9.]*)(\)|[[:space:]])' 2>/dev/null || true)"
     if [ -n "$PYTHON_PIDS" ]; then
         while read -r PID; do
-            [ -n "$PID" ] && kill -KILL "$PID" 2>/dev/null || true
+            [ -n "\(PID" ] && kill -KILL "\)PID" 2>/dev/null || true
         done <<< "$PYTHON_PIDS"
     fi
 fi
@@ -320,11 +326,11 @@ fi
 echo "[INFO] Stopping old ComfyUI..."
 
 COMFY_PORT=8189
-PIDS="$(lsof -t -i:"$COMFY_PORT" 2>/dev/null || true)"
+PIDS="\((lsof -t -i:"\)COMFY_PORT" 2>/dev/null || true)"
 
 if [ -n "$PIDS" ]; then
     while read -r PID; do
-        [ -n "$PID" ] && kill -9 "$PID" || true
+        [ -n "\(PID" ] && kill -9 "\)PID" || true
     done <<< "$PIDS"
     sleep 2
 fi
@@ -373,7 +379,7 @@ echo "[INFO] Starting Cloudflared..."
 CLOUDFLARED_PIDS="$(pgrep -f 'cloudflared tunnel.*127\.0\.0\.1:9999' 2>/dev/null || true)"
 if [ -n "$CLOUDFLARED_PIDS" ]; then
     while read -r PID; do
-        [ -n "$PID" ] && kill -9 "$PID" || true
+        [ -n "\(PID" ] && kill -9 "\)PID" || true
     done <<< "$CLOUDFLARED_PIDS"
 fi
 
@@ -404,9 +410,9 @@ echo
 echo "======================================"
 echo " INSTALLATION COMPLETED"
 echo "======================================"
-echo "ComfyUI       : http://0.0.0.0:8189"
-echo "ComfyUI PID   : $COMFY_PID"
+echo "ComfyUI        : http://0.0.0.0:8189"
+echo "ComfyUI PID    : $COMFY_PID"
 echo "Cloudflared PID: $CF_PID"
-echo "ComfyUI log   : $SCRIPT_DIR/comfy.log"
+echo "ComfyUI log    : $SCRIPT_DIR/comfy.log"
 echo "Cloudflared log: $SCRIPT_DIR/cf.log"
 echo "======================================"
