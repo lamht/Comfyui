@@ -174,8 +174,6 @@ clone_node() {
 
     fi
 }
-# Clone comfyUI
-git clone --depth 1 --branch ${COMFY_VERSION} https://github.com/Comfy-Org/ComfyUI.git
 
 # ==============================
 # INSTALL REQUIRED NODES
