@@ -21,6 +21,7 @@ FINAL_REQ="$COMFY_PATH/final.txt"
 LOG_FILE="$COMFY_PATH/install.log"
 
 COMFY_VERSION="0.36.0"
+mkdir -p /var/cache/nginx || true
 
 echo "Using ComfyUI at: $COMFY_PATH"
 
