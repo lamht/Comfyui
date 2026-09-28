@@ -198,16 +198,7 @@ clone_node \
 # ==============================
 # PYTHON / VENV
 # ==============================
-PYTHON="$COMFY_PATH/venv/bin/python"
-
-if [ ! -x "$PYTHON" ]; then
-
-    echo "[INFO] Creating virtual environment..."
-
-    python3 -m venv "$COMFY_PATH/venv"
-
-fi
-
+PYTHON="python3"
 echo "[INFO] Venv Python:"
 "$PYTHON" --version
 
@@ -223,7 +214,9 @@ grep -Eiv '^[[:space:]]*(torch|torchvision|torchaudio|numpy|transformers|hugging
 
 "$PYTHON" -m pip install \
     -r "$COMFY_REQ_NO_TORCH" \
-    --prefer-binary
+    --prefer-binary \
+    --upgrade-strategy only-if-needed \
+    --break-system-packages
 
 rm -f "$COMFY_REQ_NO_TORCH"
 
@@ -261,6 +254,7 @@ echo "[INFO] Installing custom node requirements..."
     -r "$FINAL_REQ" \
     --prefer-binary \
     --upgrade-strategy only-if-needed \
+    --break-system-packages \
     2>&1 | tee -a "$LOG_FILE"
 
 # ==============================
