@@ -299,26 +299,6 @@ else
     "$SCRIPT_DIR/install_torch_auto.sh"
 fi
 
-if TORCHAUDIO_INFO="$("$PYTHON" -c '
-import torchaudio
-print(f"torchaudio {torchaudio.__version__}")
-' 2>&1)"
-then
-    echo "[INFO] Existing torchaudio installation is working."
-    echo "[INFO] $TORCHAUDIO_INFO"
-else
-    TORCHAUDIO_VERSION="2.11.0+cu126"
-    echo "[INFO] torchaudio is missing or broken; installing version $TORCHAUDIO_VERSION."
-    echo "$TORCHAUDIO_INFO"
-
-    "$PYTHON" -m pip install \
-        "torchaudio==$TORCHAUDIO_VERSION" \
-        --index-url https://download.pytorch.org/whl/cu126 \
-        --no-deps
-
-    "$PYTHON" -c 'import torchaudio; print(f"torchaudio {torchaudio.__version__}")'
-fi
-
 # ==============================
 # STOP PYTHON PROCESSES
 # ==============================
