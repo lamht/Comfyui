@@ -1,0 +1,44 @@
+# Rename file này thành extra_model_paths.yaml (nếu chưa đúng tên)
+
+# ------ (TẮT) CẤU HÌNH CHO A1111 - KHÔNG DÙNG ------
+# a111:
+#   base_path: path/to/stable-diffusion-webui/
+#   checkpoints: models/Stable-diffusion
+#   configs: models/Stable-diffusion
+#   vae: models/VAE
+#   loras: |
+#     models/Lora
+#     models/LyCORIS
+#   upscale_models: |
+#     models/ESRGAN
+#     models/RealESRGAN
+#     models/SwinIR
+#   embeddings: embeddings
+#   hypernetworks: models/hypernetworks
+#   controlnet: models/ControlNet
+
+# ------ CẤU HÌNH CHO COMFYUI (DÙNG) ------
+comfyui:
+    base_path: E:/QuanTrong/models
+    is_default: true
+    checkpoints: checkpoints
+    clip: clip
+    clip_vision: clip_vision
+    text_encoders: text_encoders
+    configs: configs
+    controlnet: controlnet
+    diffusion_models: |
+      diffusion_models
+      unet
+    embeddings: embeddings
+    loras: loras
+    upscale_models: upscale_models
+    vae: vae
+    facestore_models: facestore_models
+    facerestore: facestore_models
+    facedetection: facedetection
+    style_models: style_models
+    sams: sams
+    pulid: pulid
+    model_patches: model_patches
+    ipadapter-flux: ipadapter-flux

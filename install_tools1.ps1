@@ -50,21 +50,6 @@ Write-Host "`nRefreshing PATH from Machine and User environment settings..." -Fo
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 Write-Host "PATH refreshed." -ForegroundColor Gray
 
-# ------------------------------------------------------------------------------
-# [2/5] Install uv using Pip
-# ------------------------------------------------------------------------------
-Write-Host "`n[2/5] Installing uv via pip..." -ForegroundColor Yellow
-if (Get-Command python -ErrorAction SilentlyContinue) {
-    python -m pip install uv --quiet
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "-> uv installed successfully." -ForegroundColor Green
-    } else {
-        Write-Error "Failed to install uv via pip."
-    }
-} else {
-    Write-Error "Python not found. Cannot install uv."
-}
-
 # ----------------------------------------------------------------------------
 # [3/5] Install Hugging Face CLI using Pip
 # ------------------------------------------------------------------------------
