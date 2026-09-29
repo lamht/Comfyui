@@ -1,0 +1,20 @@
+services:
+  comfyui:
+    image: ezycloudx/comfyui:cuda12.6
+    container_name: comfyui
+    ports:
+      - "8188:8188"
+    volumes:
+      - ./input:/app/ComfyUI/input
+      - ./output:/app/ComfyUI/output
+      - ./custom_nodes:/app/ComfyUI/custom_nodes
+      # (Khuyên dùng) Mount thêm thư mục models để lưu trữ Checkpoint/LoRA trên máy host
+      - ./models:/app/ComfyUI/models
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
