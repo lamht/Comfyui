@@ -12,7 +12,7 @@ fi
 # ==============================
 # SCRIPT PATHS
 # ==============================
-SCRIPT_DIR="\((cd "\)(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 export COMFY_PATH="$SCRIPT_DIR/ComfyUI"
 
