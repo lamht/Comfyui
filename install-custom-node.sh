@@ -187,6 +187,10 @@ clone_node \
     "$COMFY_PATH/custom_nodes/ComfyUI-Inpaint-CropAndStitch"
 
 clone_node \
+    "https://github.com/lamht/ComfyUI-LoadNextImage.git" \
+    "$COMFY_PATH/custom_nodes/ComfyUI-LoadNextImage"
+
+clone_node \
     "https://github.com/crystian/ComfyUI-Crystools.git" \
     "$COMFY_PATH/custom_nodes/ComfyUI-Crystools" \
     "1.12.0"

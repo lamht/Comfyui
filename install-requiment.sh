@@ -195,6 +195,10 @@ clone_node \
     "https://github.com/lquesada/ComfyUI-Inpaint-CropAndStitch.git" \
     "$COMFY_PATH/custom_nodes/ComfyUI-Inpaint-CropAndStitch"
 
+clone_node \
+    "https://github.com/lamht/ComfyUI-LoadNextImage.git" \
+    "$COMFY_PATH/custom_nodes/ComfyUI-LoadNextImage"
+
 # ==============================
 # PYTHON SELECTION
 # ==============================
