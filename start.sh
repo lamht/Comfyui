@@ -30,7 +30,7 @@ if [ ! -d "$COMFY_PATH/venv" ]; then
     }
 fi
 
-PYTHON="$COMFY_PATH/venv/bin/python"
+PYTHON="python3"
 
 echo "[+] Python: $PYTHON"
 "$PYTHON" --version

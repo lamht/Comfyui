@@ -120,7 +120,7 @@ CUSTOM_NODES_ZIP="/tmp/custom_nodes.zip"
 wget -q -O "$CUSTOM_NODES_ZIP" \
     "https://www.dropbox.com/scl/fi/ccabj5q3p8go0ht8fkwif/custom_nodes.zip?rlkey=6lh2ok89q00deqm0fgptdv1m7&dl=1"
 
-unzip -o "\(CUSTOM_NODES_ZIP" -d "\)COMFY_PATH"
+unzip -o "$CUSTOM_NODES_ZIP" -d "$COMFY_PATH"
 
 rm -f "$CUSTOM_NODES_ZIP"
 
@@ -168,7 +168,7 @@ clone_node() {
 
     else
 
-        git clone --depth 1 "\(URL" "\)DEST" || {
+        git clone --depth 1 "$URL" "$DEST" || {
             echo "[WARNING] Failed to clone $URL"
             echo "[WARNING] Continuing without this custom node."
         }
@@ -212,13 +212,13 @@ COMFY_REQ_NO_TORCH="$COMFY_PATH/requirements-no-torch.txt"
 # Safe pattern to filter out core ML packages
 EXCLUDE_PATTERN='^[[:space:]]*(torch|torchvision|torchaudio|triton|xformers|nvidia-.*|numpy|transformers|huggingface-hub|uv|pillow|pil|pillow-simd)([<=>~!;[:space:]@].*|$)'
 
-grep -Eiv "\(EXCLUDE_PATTERN" "\)COMFY_PATH/requirements.txt" > "\(COMFY_REQ_NO_TORCH" || [\)? -eq 1 ]
+grep -Eiv "$EXCLUDE_PATTERN" "$COMFY_PATH/requirements.txt" > "$COMFY_REQ_NO_TORCH" || [ "$?" -eq 1 ]
 
 "$PYTHON" -m pip install \
     -r "$COMFY_REQ_NO_TORCH" \
     --prefer-binary \
     --upgrade-strategy only-if-needed \
-    --break-system-packages
+    # --break-system-packages \
 
 rm -f "$COMFY_REQ_NO_TORCH"
 
@@ -235,8 +235,8 @@ find "$COMFY_PATH/custom_nodes" \
     > "$ALL_REQ"
 
 # FIX: Appropriately filter custom node requirements to prevent overwriting PyTorch
-grep -Eiv "\(EXCLUDE_PATTERN" "\)ALL_REQ" > "$ALL_REQ.filtered" || true
-mv "\(ALL_REQ.filtered" "\)ALL_REQ"
+grep -Eiv "$EXCLUDE_PATTERN" "$ALL_REQ" > "$ALL_REQ.filtered" || [ "$?" -eq 1 ]
+mv "$ALL_REQ.filtered" "$ALL_REQ"
 
 echo "[INFO] Requirements collected:"
 wc -l "$ALL_REQ"
@@ -244,7 +244,7 @@ wc -l "$ALL_REQ"
 # ==============================
 # COMPILE REQUIREMENTS
 # ==============================
-cp "\(ALL_REQ" "\)FINAL_REQ"
+cp "$ALL_REQ" "$FINAL_REQ"
 
 # ==============================
 # INSTALL NODE REQUIREMENTS
@@ -255,7 +255,7 @@ echo "[INFO] Installing custom node requirements..."
     -r "$FINAL_REQ" \
     --prefer-binary \
     --upgrade-strategy only-if-needed \
-    --break-system-packages \
+    # --break-system-packages \
     2>&1 | tee -a "$LOG_FILE"
 
 # ==============================
@@ -273,7 +273,7 @@ echo "======================================"
 echo " CHECKING PYTORCH / CUDA"
 echo "======================================"
 
-if TORCH_INFO="\(("\)PYTHON" -c '
+if TORCH_INFO="$("$PYTHON" -c '
 import torch
 
 if not torch.cuda.is_available():
@@ -304,18 +304,18 @@ fi
 # ==============================
 echo "[INFO] Stopping existing Python processes..."
 
-PYTHON_PIDS="\((pgrep -f '(^|/)(python|python3)([0-9.]*)(\)|[[:space:]])' 2>/dev/null || true)"
+PYTHON_PIDS="$(pgrep -f '(^|/)(python|python3)([0-9.]*)(\)|[[:space:]])' 2>/dev/null || true)"
 
 if [ -n "$PYTHON_PIDS" ]; then
     while read -r PID; do
-        [ -n "\(PID" ] && kill -TERM "\)PID" 2>/dev/null || true
+        [ -n "$PID" ] && kill -TERM "$PID" 2>/dev/null || true
     done <<< "$PYTHON_PIDS"
     sleep 2
 
-    PYTHON_PIDS="\((pgrep -f '(^|/)(python|python3)([0-9.]*)(\)|[[:space:]])' 2>/dev/null || true)"
+    PYTHON_PIDS="$(pgrep -f '(^|/)(python|python3)([0-9.]*)(\)|[[:space:]])' 2>/dev/null || true)"
     if [ -n "$PYTHON_PIDS" ]; then
         while read -r PID; do
-            [ -n "\(PID" ] && kill -KILL "\)PID" 2>/dev/null || true
+            [ -n "$PID" ] && kill -KILL "$PID" 2>/dev/null || true
         done <<< "$PYTHON_PIDS"
     fi
 fi
@@ -326,11 +326,11 @@ fi
 echo "[INFO] Stopping old ComfyUI..."
 
 COMFY_PORT=8189
-PIDS="\((lsof -t -i:"\)COMFY_PORT" 2>/dev/null || true)"
+PIDS="$(lsof -t -i:"$COMFY_PORT" 2>/dev/null || true)"
 
 if [ -n "$PIDS" ]; then
     while read -r PID; do
-        [ -n "\(PID" ] && kill -9 "\)PID" || true
+        [ -n "$PID" ] && kill -9 "$PID" || true
     done <<< "$PIDS"
     sleep 2
 fi
@@ -379,7 +379,7 @@ echo "[INFO] Starting Cloudflared..."
 CLOUDFLARED_PIDS="$(pgrep -f 'cloudflared tunnel.*127\.0\.0\.1:9999' 2>/dev/null || true)"
 if [ -n "$CLOUDFLARED_PIDS" ]; then
     while read -r PID; do
-        [ -n "\(PID" ] && kill -9 "\)PID" || true
+        [ -n "$PID" ] && kill -9 "$PID" || true
     done <<< "$CLOUDFLARED_PIDS"
 fi
 
