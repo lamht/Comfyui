@@ -30,7 +30,7 @@ services:
       - "8080:80"
     volumes:
       - ./:/srv
-      - ./filebrowser.db:/database/filebrowser.db
+      - ./database/filebrowser.db:/database/filebrowser.db
     restart: unless-stopped
 
   # Cloudflare Tunnel cho ComfyUI
