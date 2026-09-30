@@ -1,41 +1,52 @@
-FROM python:3.10-slim
+# Sử dụng Base Image NVIDIA CUDA 12.4 / Ubuntu 22.04 (môi trường tối ưu cho PyTorch hiện tại)
+FROM nvidia/cuda:12.4.1-devel-ubuntu22.04
 
-ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-         git curl wget unzip build-essential libgl1 libglib2.0-0 ca-certificates \
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+
+# 1. Cài đặt các gói hệ thống cần thiết
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-venv \
+    git \
+    wget \
+    curl \
+    ffmpeg \
+    libgl1 \
+    libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-ARG SCRIPT_DIR="/app"
-ENV SCRIPT_DIR="/app"
-ARG COMFY_PATH="$SCRIPT_DIR/ComfyUI"
-ARG ALL_REQ="$COMFY_PATH/all.txt"
-ARG FINAL_REQ="$COMFY_PATH/final.txt"
-ARG LOG_FILE="$COMFY_PATH/install.log"
+WORKDIR /app
+
+# 2. Clone ComfyUI base
+RUN git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git .
+
+# 3. Cài đặt PyTorch hỗ trợ CUDA
+RUN pip3 install --no-cache-dir torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu124
+
+# 4. Cài đặt dependencies cho ComfyUI
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# 5. Clone các Custom Nodes theo yêu cầu
+WORKDIR /app/custom_nodes
+RUN git clone --depth 1 https://github.com/lamht/ComfyUI-LoadNextImage.git && \
+    git clone --depth 1 https://github.com/rgthree/rgthree-comfy.git && \
+    git clone --depth 1 https://github.com/ltdrdata/ComfyUI-Manager.git && \
+    git clone --depth 1 https://github.com/crystian/ComfyUI-Crystools.git && \
+    git clone --depth 1 https://github.com/lquesada/ComfyUI-Inpaint-CropAndStitch.git
+
+# 6. Tự động tìm và cài đặt requirements.txt của các custom node (nếu có)
+RUN find . -maxdepth 2 -name "requirements.txt" -exec pip3 install --no-cache-dir -r {} \;
 
 WORKDIR /app
-COPY . /app
 
-RUN wget -O custom_nodes.zip "https://www.dropbox.com/scl/fi/ccabj5q3p8go0ht8fkwif/custom_nodes.zip?rlkey=6lh2ok89q00deqm0fgptdv1m7&st=8lx5fxip&dl=0"
-RUN unzip -o custom_nodes.zip -d "$COMFY_PATH"
-
-# Install pip requirements
-# Install pip and project requirements (runs the same logic as install-requiment.sh)
-RUN python3 -m pip install --upgrade pip setuptools wheel \
- && pip install -r "$COMFY_PATH/requirements.txt" --prefer-binary \
- && pip install pip-tools \
- && { find "$COMFY_PATH/custom_nodes" -type f -name "requirements.txt" -size +0c -exec sh -c 'cat "$1"; echo' _ {} \; ; } > "$ALL_REQ" \
- && if pip-compile "$ALL_REQ" -o "$FINAL_REQ" --resolver=backtracking 2>&1 | tee -a "$LOG_FILE"; then echo "[+] Compile success"; else echo "[!] Compile failed — falling back to all.txt" && cp "$ALL_REQ" "$FINAL_REQ"; fi \
- && pip install -r "$FINAL_REQ" --prefer-binary --upgrade-strategy only-if-needed 2>&1 | tee -a "$LOG_FILE"
-
-RUN pip uninstall torch torchvision torchaudio -y || true
-RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
-
-# Copy entrypoint
-COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+# 8. Cấu hình script khởi chạy
+COPY entrypoint.sh /app/entrypoint.sh
+COPY hubfacedownload.sh /app/hubfacedownload.sh
+RUN chmod +x /app/entrypoint.sh
+RUN chmod +x /app/hubfacedownload.sh
 
 EXPOSE 8188
 
-ENV PYTHONUNBUFFERED=1
-CMD ["/usr/local/bin/docker-entrypoint.sh"]
+ENTRYPOINT ["/app/entrypoint.sh"]

@@ -8,7 +8,6 @@ services:
       - ./input:/app/ComfyUI/input
       - ./output:/app/ComfyUI/output
       - ./custom_nodes:/app/ComfyUI/custom_nodes
-      # (Khuyên dùng) Mount thêm thư mục models để lưu trữ Checkpoint/LoRA trên máy host
       - ./models:/app/ComfyUI/models
     deploy:
       resources:

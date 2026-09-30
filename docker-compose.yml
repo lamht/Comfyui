@@ -1,22 +1,26 @@
 version: "3.8"
 services:
-  comfy:
+  comfyui:
     image: thanhlam00290/comfyui
     container_name: comfyui
     ports:
       - "8188:8188"
     volumes:
-      - ./model:/app/ComfyUI/models:rw
+      - ./input:/app/ComfyUI/input:rw
       - ./output:/app/ComfyUI/output:rw
+      - ./custom_nodes:/app/ComfyUI/custom_nodes:rw
+      - ./models:/app/ComfyUI/models:rw
     environment:
       - HF_AUTO_DOWNLOAD=1
       - HF_TOKEN=${HF_TOKEN:-}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "curl -sSf http://localhost:8188/ || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   cloudflared:
     image: cloudflare/cloudflared:latest
