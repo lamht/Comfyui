@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # 2. Clone ComfyUI base
-RUN git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git .
+RUN git clone --depth 1 https://github.com/Comfy-Org/ComfyUI.git
 
 # 3. Cài đặt PyTorch hỗ trợ CUDA
 RUN pip3 install --no-cache-dir torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu124
