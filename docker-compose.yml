@@ -9,7 +9,7 @@ services:
       - ./data:/app/data:rw
       - ./input:/app/ComfyUI/input:rw
       - ./output:/app/ComfyUI/output:rw
-      - ./custom_nodes:/app/ComfyUI/custom_nodes:rw
+      # - ./custom_nodes:/app/ComfyUI/custom_nodes:rw
       - ./ComfyUI/models:/app/ComfyUI/models:rw
     environment:
       - HF_AUTO_DOWNLOAD=0

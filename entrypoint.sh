@@ -17,12 +17,6 @@ else
 fi
 
 echo "[INFO] Starting ComfyUI..."
-cd /app/ComfyUI/custom_nodes
-git clone --depth 1 https://github.com/lamht/ComfyUI-LoadNextImage.git
-git clone --depth 1 https://github.com/rgthree/rgthree-comfy.git
-git clone --depth 1 https://github.com/ltdrdata/ComfyUI-Manager.git
-git clone --depth 1 https://github.com/crystian/ComfyUI-Crystools.git
-git clone --depth 1 https://github.com/lquesada/ComfyUI-Inpaint-CropAndStitch.git
 cd /app/ComfyUI
 
 exec python3 main.py \
