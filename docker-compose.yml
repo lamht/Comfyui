@@ -10,7 +10,7 @@ services:
       - ./input:/app/ComfyUI/input:rw
       - ./output:/app/ComfyUI/output:rw
       - ./custom_nodes:/app/ComfyUI/custom_nodes:rw
-      - ./models:/app/ComfyUI/models:rw
+      - ./models/ComfyUI:/app/ComfyUI/models:rw
     environment:
       - HF_AUTO_DOWNLOAD=0
       - HF_TOKEN=${HF_TOKEN:-}
