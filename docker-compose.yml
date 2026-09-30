@@ -12,7 +12,7 @@ services:
       - ./custom_nodes:/app/ComfyUI/custom_nodes:rw
       - ./models:/app/ComfyUI/models:rw
     environment:
-      - HF_AUTO_DOWNLOAD=1
+      - HF_AUTO_DOWNLOAD=0
       - HF_TOKEN=${HF_TOKEN:-}
     deploy:
       resources:
