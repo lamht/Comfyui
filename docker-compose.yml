@@ -6,6 +6,7 @@ services:
     ports:
       - "8188:8188"
     volumes:
+      - ./data:/app/data:rw
       - ./input:/app/ComfyUI/input:rw
       - ./output:/app/ComfyUI/output:rw
       - ./custom_nodes:/app/ComfyUI/custom_nodes:rw
@@ -22,11 +23,30 @@ services:
               capabilities: [gpu]
     restart: unless-stopped
 
-  cloudflared:
+  filebrowser:
+    image: filebrowser/filebrowser:latest
+    container_name: filebrowser
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/srv
+      - ./filebrowser.db:/database/filebrowser.db
+    restart: unless-stopped
+
+  # Cloudflare Tunnel cho ComfyUI
+  cloudflared-comfyui:
     image: cloudflare/cloudflared:latest
-    container_name: cloudflared
-    command: tunnel --no-autoupdate --url http://comfy:8188
-    
+    container_name: cloudflared-comfyui
+    command: tunnel --no-autoupdate --url http://comfyui:8188
     restart: unless-stopped
     depends_on:
-      - comfy
+      - comfyui
+
+  # Cloudflare Tunnel riêng cho Filebrowser
+  cloudflared-filebrowser:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared-filebrowser
+    command: tunnel --no-autoupdate --url http://filebrowser:80
+    restart: unless-stopped
+    depends_on:
+      - filebrowser
