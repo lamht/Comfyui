@@ -30,15 +30,6 @@ services:
       - "8080:80"
     volumes:
       - ./:/srv
-    environment:
-      FB_ADMIN_PASSWORD: "1234"
-    entrypoint: >
-      sh -c '
-        filebrowser users update admin
-        --password "$$FB_ADMIN_PASSWORD" || 
-        filebrowser users add admin "$$FB_ADMIN_PASSWORD" --perm.admin;
-        exec filebrowser
-      '
     restart: unless-stopped
 
   # Cloudflare Tunnel cho ComfyUI
