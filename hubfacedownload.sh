@@ -43,6 +43,17 @@ mkdir -p $BASE/{loras,checkpoints,clip,vae,upscale_models,facerestore_models}
 
 rm -rf /root/Comfyui/ComfyUI/models/diffusion_models/.cache/huggingface/download/*
 
+
+# 4x UltraSharp
+hf download Kim2091/UltraSharp \
+  4x-UltraSharp.pth \
+  --local-dir "$BASE/upscale_models"
+
+#https://huggingface.co/BarrenWardo/Upscalers/blob/main/003_realSR_BSRGAN_DFOWMFC_s64w8_SwinIR-L_x4_GAN.pth
+hf download BarrenWardo/Upscalers \
+  003_realSR_BSRGAN_DFOWMFC_s64w8_SwinIR-L_x4_GAN.pth \
+  --local-dir "$BASE/upscale_models"
+
 # Raw downloads (no existence checks)
 # We'll call `hf download` and `wget -O` directly so files are always fetched/overwritten.
 
@@ -66,44 +77,6 @@ hf download ali-vilab/ACE_Plus portrait/comfyui_portrait_lora64.safetensors --lo
 #https://huggingface.co/dx8152/Flux2-Klein-9B-Consistency/blob/main/Flux2-Klein-9B-consistency-V2.safetensors
 hf download dx8152/Flux2-Klein-9B-Consistency Flux2-Klein-9B-consistency-V2.safetensors --local-dir $BASE/loras
 
-
-# src="$BASE/loras/portrait/comfyui_portrait_lora64.safetensors"
-# dst="$BASE/loras/comfyui_portrait_lora64.safetensors"
-# if [ -f "$src" ]; then
-#   mkdir -p "$(dirname "$dst")"
-#   mv "$src" "$dst"
-# else
-#   echo "[SKIP] $src missing, not moving"
-# fi
-
-# hf download ali-vilab/ACE_Plus subject/comfyui_subject_lora16.safetensors --local-dir $BASE/loras
-# src="$BASE/loras/subject/comfyui_subject_lora16.safetensors"
-# dst="$BASE/loras/comfyui_subject_lora16.safetensors"
-# if [ -f "$src" ]; then
-#   mkdir -p "$(dirname "$dst")"
-#   mv "$src" "$dst"
-# else
-#   echo "[SKIP] $src missing, not moving"
-# fi
-
-#https://huggingface.co/dx8152/Flux2-Klein-9B-Consistency/blob/main/Klein-consistency.safetensors
-# hf download dx8152/Flux2-Klein-9B-Consistency Klein-consistency.safetensors --local-dir $BASE/loras
-
-#https://huggingface.co/gmp-dev/gmp-lora/blob/1786940ba90ccc3509970d1cb3541b2fccfd3de7/Lora/Likeness/realisticVaginasGod_sdVSGp1S.safetensors
-# hf_download_if_missing "$BASE/loras/realisticVaginasGod_sdVSGp1S.safetensors" gmp-dev/gmp-lora Lora/Likeness/realisticVaginasGod_sdVSGp1S.safetensors --local-dir $BASE/loras
-# src="$BASE/loras/Lora/Likeness/realisticVaginasGod_sdVSGp1S.safetensors"
-# dst="$BASE/loras/realisticVaginasGod_sdVSGp1S.safetensors"
-# if [ -f "$src" ]; then
-#   mkdir -p "$(dirname "$dst")"
-#   mv "$src" "$dst"
-# else
-#   echo "[SKIP] $src missing, not moving"
-# fi
-
-# hf download fal/FLUX.2-dev-Turbo \
-# flux.2-turbo-lora.safetensors \
-# --local-dir $BASE/loras
-
 # ==============================
 # DOWNLOAD CHECKPOINT
 # ==============================
@@ -123,7 +96,7 @@ hf download black-forest-labs/FLUX.2-klein-9b-fp8 flux-2-klein-9b-fp8.safetensor
 # hf download jackzheng/flux-fill-FP8 \
 #   fluxFillFP8_v10.safetensors \
 #   --local-dir $BASE/diffusion_models
-  
+
 # ==============================
 # DOWNLOAD CLIP
 # ==============================
@@ -156,16 +129,6 @@ fi
 # hf download lovis93/testllm \
 #   ae.safetensors \
 #   --local-dir $BASE/vae
-
-# 4x UltraSharp
-hf download Kim2091/UltraSharp \
-  4x-UltraSharp.pth \
-  --local-dir "$BASE/upscale_models"
-
-#https://huggingface.co/BarrenWardo/Upscalers/blob/main/003_realSR_BSRGAN_DFOWMFC_s64w8_SwinIR-L_x4_GAN.pth
-hf download BarrenWardo/Upscalers \
-  003_realSR_BSRGAN_DFOWMFC_s64w8_SwinIR-L_x4_GAN.pth \
-  --local-dir "$BASE/upscale_models"
 
 # CodeFormer
 wget -O "$BASE/facerestore_models/codeformer.pth" \
