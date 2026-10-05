@@ -162,6 +162,11 @@ hf download Kim2091/UltraSharp \
   4x-UltraSharp.pth \
   --local-dir "$BASE/upscale_models"
 
+#https://huggingface.co/BarrenWardo/Upscalers/blob/main/003_realSR_BSRGAN_DFOWMFC_s64w8_SwinIR-L_x4_GAN.pth
+hf download BarrenWardo/Upscalers \
+  003_realSR_BSRGAN_DFOWMFC_s64w8_SwinIR-L_x4_GAN.pth \
+  --local-dir "$BASE/upscale_models"
+
 # CodeFormer
 wget -O "$BASE/facerestore_models/codeformer.pth" \
   "https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth"
