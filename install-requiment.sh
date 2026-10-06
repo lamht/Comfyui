@@ -117,12 +117,12 @@ echo "[INFO] Downloading custom nodes..."
 
 CUSTOM_NODES_ZIP="/tmp/custom_nodes.zip"
 
-wget -q -O "$CUSTOM_NODES_ZIP" \
-    "https://www.dropbox.com/scl/fi/ccabj5q3p8go0ht8fkwif/custom_nodes.zip?rlkey=6lh2ok89q00deqm0fgptdv1m7&dl=1"
+# wget -q -O "$CUSTOM_NODES_ZIP" \
+#     "https://www.dropbox.com/scl/fi/ccabj5q3p8go0ht8fkwif/custom_nodes.zip?rlkey=6lh2ok89q00deqm0fgptdv1m7&dl=1"
 
-unzip -o "$CUSTOM_NODES_ZIP" -d "$COMFY_PATH"
+# unzip -o "$CUSTOM_NODES_ZIP" -d "$COMFY_PATH"
 
-rm -f "$CUSTOM_NODES_ZIP"
+# rm -f "$CUSTOM_NODES_ZIP"
 
 # ==============================
 # REMOVE OLD NODES
