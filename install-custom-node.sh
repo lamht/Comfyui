@@ -83,7 +83,7 @@ apt-get install -y \
     libgl1 \
     libglib2.0-0 \
     lsof \
-    nginx
+    nginx || true
 
 # ==============================
 # INSTALL CLOUDFLARED
@@ -95,7 +95,7 @@ CLOUDFLARED_DEB="/tmp/cloudflared-linux-amd64.deb"
 wget -q -O "$CLOUDFLARED_DEB" \
     "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb"
 
-dpkg -i "$CLOUDFLARED_DEB" || apt-get install -f -y
+dpkg -i "$CLOUDFLARED_DEB" || apt-get install -f -y || true
 
 rm -f "$CLOUDFLARED_DEB"
 
@@ -243,7 +243,7 @@ echo "[INFO] Installing custom node requirements..."
     -r "$FINAL_REQ" \
     --prefer-binary \
     --break-system-packages \
-    2>&1 | tee -a "$LOG_FILE"
+    2>&1 | tee -a "$LOG_FILE" || true
 
 # ==============================
 # STOP OLD COMFYUI
