@@ -260,7 +260,7 @@ echo "[INFO] Installing custom node requirements..."
     --prefer-binary \
     --upgrade-strategy only-if-needed \
     # --break-system-packages \
-    2>&1 | tee -a "$LOG_FILE"
+    2>&1 | tee -a "$LOG_FILE" || true
 
 # ==============================
 # SQLALCHEMY
@@ -297,7 +297,7 @@ else
     if [ -f "$SCRIPT_DIR/install_torch_auto.sh" ]; then
         echo "[INFO] Running install_torch_auto.sh..."
         chmod +x "$SCRIPT_DIR/install_torch_auto.sh"
-        "$SCRIPT_DIR/install_torch_auto.sh"
+        "$SCRIPT_DIR/install_torch_auto.sh" || true
     else
         echo "[WARNING] install_torch_auto.sh not found, keeping system PyTorch."
     fi
