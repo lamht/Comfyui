@@ -190,15 +190,15 @@ clone_node \
     "https://github.com/lamht/ComfyUI-LoadNextImage.git" \
     "$COMFY_PATH/custom_nodes/ComfyUI-LoadNextImage"
 
-clone_node \
-    "https://github.com/crystian/ComfyUI-Crystools.git" \
-    "$COMFY_PATH/custom_nodes/ComfyUI-Crystools" \
-    "1.12.0"
+# clone_node \
+#     "https://github.com/crystian/ComfyUI-Crystools.git" \
+#     "$COMFY_PATH/custom_nodes/ComfyUI-Crystools" \
+#     "1.12.0"
 
-clone_node \
-    "https://github.com/ltdrdata/ComfyUI-Manager.git" \
-    "$COMFY_PATH/custom_nodes/ComfyUI-Manager" \
-    "3.32.5"
+# clone_node \
+#     "https://github.com/ltdrdata/ComfyUI-Manager.git" \
+#     "$COMFY_PATH/custom_nodes/ComfyUI-Manager" \
+#     "3.32.5"
 
 # ==============================
 # PYTHON / VENV
@@ -239,11 +239,11 @@ cp "$ALL_REQ" "$FINAL_REQ"
 # ==============================
 echo "[INFO] Installing custom node requirements..."
 
-"$PYTHON" -m pip install \
-    -r "$FINAL_REQ" \
-    --prefer-binary \
-    --break-system-packages \
-    2>&1 | tee -a "$LOG_FILE" || true
+# "$PYTHON" -m pip install \
+#     -r "$FINAL_REQ" \
+#     --prefer-binary \
+#     --break-system-packages \
+#     2>&1 | tee -a "$LOG_FILE" || true
 
 # ==============================
 # STOP OLD COMFYUI
