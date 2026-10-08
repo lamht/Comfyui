@@ -60,75 +60,14 @@ hf download BarrenWardo/Upscalers \
 # ==============================
 # DOWNLOAD LORA
 # ==============================
-#https://huggingface.co/Aitrepreneur/FLX/blob/main/scg-anatomy-female-v2.safetensors
-# hf download Aitrepreneur/FLX scg-anatomy-female-v2.safetensors --local-dir $BASE/loras
-
-#https://huggingface.co/uriel353/flux-female-anatomy/resolve/main/flux-female-anatomy.safetensors?download=true
-# hf download uriel353/flux-female-anatomy flux-female-anatomy.safetensors --local-dir $BASE/loras
-# v4g1n4, n4k3d
 
 # ==============================
 # DOWNLOAD LORA (FACE SWAP)
 # ==============================
-hf download Alissonerdx/BFS-Best-Face-Swap bfs_head_v1_flux-klein_9b_step3500_rank128.safetensors --local-dir $BASE/loras
-
-hf download ali-vilab/ACE_Plus portrait/comfyui_portrait_lora64.safetensors --local-dir $BASE/loras
+hf download Alissonerdx/BFS-Best-Face-Swap bfs_head_v1_flux-klein_9b_step3500_rank128.safetensors --lo
 
 #https://huggingface.co/dx8152/Flux2-Klein-9B-Consistency/blob/main/Flux2-Klein-9B-consistency-V2.safetensors
 hf download dx8152/Flux2-Klein-9B-Consistency Flux2-Klein-9B-consistency-V2.safetensors --local-dir $BASE/loras
-
-# ==============================
-# DOWNLOAD CHECKPOINT
-# ==============================
-# hf download black-forest-labs/FLUX.2-klein-9B \
-#   flux-2-klein-9b.safetensors \
-#   --local-dir $BASE/diffusion_models
-
-#https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-fp8/resolve/main/flux-2-klein-9b-fp8.safetensors?download=true
-hf download black-forest-labs/FLUX.2-klein-9b-fp8 flux-2-klein-9b-fp8.safetensors --local-dir $BASE/diffusion_models
-
-#https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-kv-fp8/resolve/main/flux-2-klein-9b-kv-fp8.safetensors?download=true
-# hf download black-forest-labs/FLUX.2-klein-9b-kv-fp8 \
-#   flux-2-klein-9b-kv-fp8.safetensors \
-#   --local-dir $BASE/diffusion_models
-
-#https://huggingface.co/jackzheng/flux-fill-FP8/blob/main/fluxFillFP8_v10.safetensors
-# hf download jackzheng/flux-fill-FP8 \
-#   fluxFillFP8_v10.safetensors \
-#   --local-dir $BASE/diffusion_models
-
-# ==============================
-# DOWNLOAD CLIP
-# ==============================
-# DOWNLOAD CLIP
-hf download Comfy-Org/vae-text-encorder-for-flux-klein-9b split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors --local-dir $BASE/clip
-if [ -f "$BASE/clip/split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors" ]; then
-  mv "$BASE/clip/split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors" "$BASE/clip/qwen_3_8b_fp8mixed.safetensors"
-fi
-
-#https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors?download=true
-# hf download comfyanonymous/flux_text_encoders \
-#   clip_l.safetensors \
-#   --local-dir $BASE/clip
-
-#https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors?download=true
-# hf download comfyanonymous/flux_text_encoders \
-#   t5xxl_fp16.safetensors \
-#   --local-dir $BASE/clip
-  
-# ==============================
-# DOWNLOAD VAE
-# ==============================
-# DOWNLOAD VAE
-hf download Comfy-Org/vae-text-encorder-for-flux-klein-9b split_files/vae/flux2-vae.safetensors --local-dir $BASE/vae
-if [ -f "$BASE/vae/split_files/vae/flux2-vae.safetensors" ]; then
-  mv "$BASE/vae/split_files/vae/flux2-vae.safetensors" "$BASE/vae/flux2-vae.safetensors"
-fi
-
-#https://huggingface.co/lovis93/testllm/resolve/ed9cf1af7465cebca4649157f118e331cf2a084f/ae.safetensors?download=true
-# hf download lovis93/testllm \
-#   ae.safetensors \
-#   --local-dir $BASE/vae
 
 # CodeFormer
 wget -O "$BASE/facerestore_models/codeformer.pth" \
@@ -166,4 +105,30 @@ wget -O "$BASE/loras/flux2_lora005.safetensors" "https://www.dropbox.com/scl/fi/
 
 #https://www.dropbox.com/scl/fi/p8710w6fydmj9023v1ui3/realistic.safetensors?rlkey=jvq2qylwuyxbjqkqnwa8ukiux&st=ykpssn2f&dl=0
 wget -O "$BASE/loras/realistic.safetensors" "https://www.dropbox.com/scl/fi/p8710w6fydmj9023v1ui3/realistic.safetensors?rlkey=jvq2qylwuyxbjqkqnwa8ukiux&st=ykpssn2f&dl=1"
+
+
+# ==============================
+# DOWNLOAD CHECKPOINT
+# ==============================
+
+#https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-fp8/resolve/main/flux-2-klein-9b-fp8.safetensors?download=true
+hf download black-forest-labs/FLUX.2-klein-9b-fp8 flux-2-klein-9b-fp8.safetensors --local-dir $BASE/diffusion_models
+
+# ==============================
+# DOWNLOAD CLIP
+# ==============================
+
+hf download Comfy-Org/vae-text-encorder-for-flux-klein-9b split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors --local-dir $BASE/clip
+if [ -f "$BASE/clip/split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors" ]; then
+  mv "$BASE/clip/split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors" "$BASE/clip/qwen_3_8b_fp8mixed.safetensors"
+fi  
+# ==============================
+# DOWNLOAD VAE
+# ==============================
+
+hf download Comfy-Org/vae-text-encorder-for-flux-klein-9b split_files/vae/flux2-vae.safetensors --local-dir $BASE/vae
+if [ -f "$BASE/vae/split_files/vae/flux2-vae.safetensors" ]; then
+  mv "$BASE/vae/split_files/vae/flux2-vae.safetensors" "$BASE/vae/flux2-vae.safetensors"
+fi
+
 echo "✅ Download complete!"
