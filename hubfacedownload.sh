@@ -64,7 +64,7 @@ hf download BarrenWardo/Upscalers \
 # ==============================
 # DOWNLOAD LORA (FACE SWAP)
 # ==============================
-hf download Alissonerdx/BFS-Best-Face-Swap bfs_head_v1_flux-klein_9b_step3500_rank128.safetensors --lo
+hf download Alissonerdx/BFS-Best-Face-Swap bfs_head_v1_flux-klein_9b_step3500_rank128.safetensors --local-dir "$BASE/loras"
 
 #https://huggingface.co/dx8152/Flux2-Klein-9B-Consistency/blob/main/Flux2-Klein-9B-consistency-V2.safetensors
 hf download dx8152/Flux2-Klein-9B-Consistency Flux2-Klein-9B-consistency-V2.safetensors --local-dir $BASE/loras
