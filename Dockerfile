@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+
 # ============================================================
 # ComfyUI + NVIDIA CUDA 13.0 / Ubuntu 24.04
 # Python 3.12
@@ -7,14 +9,14 @@ FROM nvidia/cuda:13.0.0-devel-ubuntu24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
-ENV PIP_NO_CACHE_DIR=1
 ENV PATH="/opt/venv/bin:${PATH}"
 
 # ============================================================
 # 1. System packages
 # ============================================================
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN --mount=type=cache,target=/root/.cache/pip \
+    apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python3-venv \
     python3-dev \
@@ -26,10 +28,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxext6 \
     libxrender1 \
     build-essential \
+    && python3 -m venv /opt/venv \
+    && python -m pip install --upgrade pip setuptools wheel \
     && rm -rf /var/lib/apt/lists/*
-
-RUN python3 -m venv /opt/venv \
-    && python -m pip install --upgrade pip setuptools wheel
 
 # ============================================================
 # 2. ComfyUI
@@ -45,7 +46,8 @@ RUN git clone --depth 1 \
 # 3. PyTorch CUDA 13.0
 # ============================================================
 
-RUN python -m pip install \
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python -m pip install \
     --index-url https://download.pytorch.org/whl/cu130 \
     torch torchvision torchaudio
 
@@ -55,18 +57,15 @@ RUN python -m pip install \
 
 WORKDIR /app/ComfyUI
 
-RUN python -m pip install -r requirements.txt
-
-# ============================================================
-# 5. Explicit Pydantic compatibility
-# ============================================================
-
-RUN python -m pip install \
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python -m pip install -r requirements.txt \
+    && python -m pip install \
     "pydantic>=2.10,<3" \
-    "pydantic-settings>=2,<3"
+    "pydantic-settings>=2,<3" \
+    PyOpenGL PyOpenGL_accelerate
 
 # ============================================================
-# 6. Custom Nodes
+# 5. Custom Nodes
 # ============================================================
 
 WORKDIR /app/ComfyUI/custom_nodes
@@ -83,10 +82,11 @@ RUN git clone --depth 1 \
         https://github.com/lquesada/ComfyUI-Inpaint-CropAndStitch.git
 
 # ============================================================
-# 7. Custom node requirements
+# 6. Custom node requirements
 # ============================================================
 
-RUN find /app/ComfyUI/custom_nodes \
+RUN --mount=type=cache,target=/root/.cache/pip \
+    find /app/ComfyUI/custom_nodes \
     -maxdepth 3 \
     -type f \
     -name "requirements.txt" \
@@ -94,28 +94,26 @@ RUN find /app/ComfyUI/custom_nodes \
     -exec python -m pip install -r {} \;
 
 # ============================================================
-# 8. Re-apply critical dependencies
+# 7. Re-apply critical dependencies
 #    Custom nodes may change Pydantic/FastAPI versions
 # ============================================================
 
-RUN python -m pip install \
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python -m pip install \
     "pydantic>=2.10,<3" \
     "pydantic-settings>=2,<3"
 
 # ============================================================
-# 9. Optional OpenGL acceleration
+# 8. Verify Python / Torch / Pydantic
 # ============================================================
 
-RUN python -m pip install PyOpenGL PyOpenGL_accelerate
-
-# ============================================================
-# 10. Verify Python / Torch / Pydantic
-# ============================================================
-
-RUN python - <<'PY'
+RUN python -m pip check \
+    && python - <<'PY'
 import sys
 import torch
 import pydantic
+import comfy_kitchen
+from comfy_kitchen.tensor import w4a8_int8_linear
 
 if sys.version_info < (3, 12):
     raise RuntimeError(f"Expected Python 3.12+, found {sys.version}")
@@ -136,15 +134,6 @@ class TestModel(BaseModel):
 
 print("Pydantic Field test:", TestModel())
 print("=" * 60)
-PY
-
-# ============================================================
-# 11. Verify comfy-kitchen operations used by FP8 and W4A8 paths
-# ============================================================
-
-RUN python - <<'PY'
-import comfy_kitchen
-from comfy_kitchen.tensor import w4a8_int8_linear
 
 if not callable(getattr(comfy_kitchen, "stochastic_rounding_fp8", None)):
     raise RuntimeError("comfy-kitchen does not expose stochastic_rounding_fp8")
@@ -155,13 +144,7 @@ print("comfy-kitchen FP8 stochastic rounding and W4A8 linear APIs are available"
 PY
 
 # ============================================================
-# 12. Check dependencies
-# ============================================================
-
-RUN python -m pip check
-
-# ============================================================
-# 13. Startup scripts
+# 9. Startup scripts
 # ============================================================
 
 WORKDIR /app
@@ -174,13 +157,13 @@ RUN chmod +x \
     /app/hubfacedownload.sh
 
 # ============================================================
-# 14. ComfyUI port
+# 10. ComfyUI port
 # ============================================================
 
 EXPOSE 8188
 
 # ============================================================
-# 15. Start
+# 11. Start
 # ============================================================
 
 ENTRYPOINT ["/app/entrypoint.sh"]
