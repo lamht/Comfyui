@@ -26,7 +26,8 @@ GPU notes:
 docker run --gpus all -d --name comfyui -p 8188:8188 -e HF_AUTO_DOWNLOAD=1 -e HF_TOKEN="$HF_TOKEN" comfyui:latest
 ```
 
-- Some CUDA-based images may be preferred for maximum compatibility; adjust `FROM` in the `Dockerfile` accordingly if you need a CUDA base image.
+- The image uses CUDA 13.0 and Python 3.12, and installs PyTorch from the CUDA 13.0 wheel index for newer NVIDIA GPUs. The host still needs a compatible NVIDIA driver and NVIDIA Container Toolkit.
+- The build verifies that `comfy-kitchen` exposes `stochastic_rounding_fp8` and `comfy_kitchen.tensor.w4a8_int8_linear`. The check confirms the APIs are installed; ComfyUI only runs those operations when the selected model/quantization path uses them.
 
 Hubface / model downloads:
 

@@ -1,26 +1,24 @@
 # ============================================================
-# ComfyUI + NVIDIA CUDA 12.4 / Ubuntu 22.04
-# Python 3.10
+# ComfyUI + NVIDIA CUDA 13.0 / Ubuntu 24.04
+# Python 3.12
 # ============================================================
 
-FROM nvidia/cuda:12.4.1-devel-ubuntu22.04
+FROM nvidia/cuda:13.0.0-devel-ubuntu24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV PIP_NO_CACHE_DIR=1
+ENV PATH="/opt/venv/bin:${PATH}"
 
 # ============================================================
 # 1. System packages
 # ============================================================
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
-    python3-pip \
     python3-venv \
     python3-dev \
     git \
-    wget \
-    curl \
     ffmpeg \
     libgl1 \
     libglib2.0-0 \
@@ -30,14 +28,8 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Make "python" point to Python 3
-RUN ln -sf /usr/bin/python3 /usr/local/bin/python
-
-# Upgrade pip tooling
-RUN python3 -m pip install --upgrade \
-    pip \
-    setuptools \
-    wheel
+RUN python3 -m venv /opt/venv \
+    && python -m pip install --upgrade pip setuptools wheel
 
 # ============================================================
 # 2. ComfyUI
@@ -50,13 +42,12 @@ RUN git clone --depth 1 \
     /app/ComfyUI
 
 # ============================================================
-# 3. PyTorch CUDA 12.4
+# 3. PyTorch CUDA 13.0
 # ============================================================
 
-RUN python3 -m pip install \
-    --no-cache-dir \
-    torch torchvision torchaudio \
-    --extra-index-url https://download.pytorch.org/whl/cu124
+RUN python -m pip install \
+    --index-url https://download.pytorch.org/whl/cu130 \
+    torch torchvision torchaudio
 
 # ============================================================
 # 4. ComfyUI dependencies
@@ -64,16 +55,13 @@ RUN python3 -m pip install \
 
 WORKDIR /app/ComfyUI
 
-RUN python3 -m pip install \
-    --no-cache-dir \
-    -r requirements.txt
+RUN python -m pip install -r requirements.txt
 
 # ============================================================
 # 5. Explicit Pydantic compatibility
 # ============================================================
 
-RUN python3 -m pip install \
-    --no-cache-dir \
+RUN python -m pip install \
     "pydantic>=2.10,<3" \
     "pydantic-settings>=2,<3"
 
@@ -103,15 +91,14 @@ RUN find /app/ComfyUI/custom_nodes \
     -type f \
     -name "requirements.txt" \
     -print \
-    -exec python3 -m pip install --no-cache-dir -r {} \;
+    -exec python -m pip install -r {} \;
 
 # ============================================================
 # 8. Re-apply critical dependencies
 #    Custom nodes may change Pydantic/FastAPI versions
 # ============================================================
 
-RUN python3 -m pip install \
-    --no-cache-dir \
+RUN python -m pip install \
     "pydantic>=2.10,<3" \
     "pydantic-settings>=2,<3"
 
@@ -119,18 +106,21 @@ RUN python3 -m pip install \
 # 9. Optional OpenGL acceleration
 # ============================================================
 
-RUN python3 -m pip install \
-    --no-cache-dir \
-    PyOpenGL PyOpenGL_accelerate
+RUN python -m pip install PyOpenGL PyOpenGL_accelerate
 
 # ============================================================
 # 10. Verify Python / Torch / Pydantic
 # ============================================================
 
-RUN python3 - <<'PY'
+RUN python - <<'PY'
 import sys
 import torch
 import pydantic
+
+if sys.version_info < (3, 12):
+    raise RuntimeError(f"Expected Python 3.12+, found {sys.version}")
+if torch.version.cuda != "13.0":
+    raise RuntimeError(f"Expected PyTorch CUDA 13.0, found {torch.version.cuda}")
 
 print("=" * 60)
 print("Python:", sys.version)
@@ -149,13 +139,29 @@ print("=" * 60)
 PY
 
 # ============================================================
-# 11. Check dependencies
+# 11. Verify comfy-kitchen operations used by FP8 and W4A8 paths
 # ============================================================
 
-RUN python3 -m pip check
+RUN python - <<'PY'
+import comfy_kitchen
+from comfy_kitchen.tensor import w4a8_int8_linear
+
+if not callable(getattr(comfy_kitchen, "stochastic_rounding_fp8", None)):
+    raise RuntimeError("comfy-kitchen does not expose stochastic_rounding_fp8")
+if not callable(w4a8_int8_linear):
+    raise RuntimeError("comfy-kitchen does not expose w4a8_int8_linear")
+
+print("comfy-kitchen FP8 stochastic rounding and W4A8 linear APIs are available")
+PY
 
 # ============================================================
-# 12. Startup scripts
+# 12. Check dependencies
+# ============================================================
+
+RUN python -m pip check
+
+# ============================================================
+# 13. Startup scripts
 # ============================================================
 
 WORKDIR /app
@@ -168,13 +174,13 @@ RUN chmod +x \
     /app/hubfacedownload.sh
 
 # ============================================================
-# 13. ComfyUI port
+# 14. ComfyUI port
 # ============================================================
 
 EXPOSE 8188
 
 # ============================================================
-# 14. Start
+# 15. Start
 # ============================================================
 
 ENTRYPOINT ["/app/entrypoint.sh"]
