@@ -275,6 +275,7 @@ fi
 echo "[INFO] Starting ComfyUI..."
 
 cd "$COMFY_PATH"
+mkdir -p /var/cache/nginx/view_cache || true
 
 nohup "$PYTHON" \
     "$COMFY_PATH/main.py" \
