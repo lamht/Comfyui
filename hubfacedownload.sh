@@ -102,6 +102,9 @@ download_model "my_lora_klein_002_v2.safetensors" wget -O "$BASE/loras/my_lora_k
 #https://www.dropbox.com/scl/fi/3flukm0ft73x5tvruabyk/my_lora_klein_002_v3.safetensors?rlkey=5f3p1n5md3wcp0tozz9fe713a&st=xtd288do&dl=0
 download_model "my_lora_klein_002_v3.safetensors" wget -O "$BASE/loras/my_lora_klein_002_v3.safetensors" "https://www.dropbox.com/scl/fi/3flukm0ft73x5tvruabyk/my_lora_klein_002_v3.safetensors?rlkey=5f3p1n5md3wcp0tozz9fe713a&st=xtd288do&dl=1"
 
+#https://www.dropbox.com/scl/fi/bk3fydes62owf9p7red7d/mylora_klein_003.safetensors?rlkey=o1og3d1iw2mh6e62wa63dp477&st=8rpznx5d&dl=0
+download_model "mylora_klein_003.safetensors" wget -O "$BASE/loras/mylora_klein_003.safetensors" "https://www.dropbox.com/scl/fi/bk3fydes62owf9p7red7d/mylora_klein_003.safetensors?rlkey=o1og3d1iw2mh6e62wa63dp477&st=8rpznx5d&dl=1"
+
 # https://www.dropbox.com/scl/fi/lew172dl9zaygl17wgvqv/my_lora_klein_004_000000300.safetensors?rlkey=0hbw51g0j3kjcvgjxecag4oc6&st=7zu7mowi&dl=0
 download_model "my_lora_klein_004_000000300.safetensors" wget -O "$BASE/loras/my_lora_klein_004_000000300.safetensors" "https://www.dropbox.com/scl/fi/lew172dl9zaygl17wgvqv/my_lora_klein_004_000000300.safetensors?rlkey=0hbw51g0j3kjcvgjxecag4oc6&st=7zu7mowi&dl=1"
 
