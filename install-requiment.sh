@@ -272,36 +272,36 @@ echo "[INFO] Installing SQLAlchemy..."
 # ==============================
 # CHECK / INSTALL PYTORCH
 # ==============================
-echo
-echo "======================================"
-echo " CHECKING PYTORCH / CUDA"
-echo "======================================"
+# echo
+# echo "======================================"
+# echo " CHECKING PYTORCH / CUDA"
+# echo "======================================"
 
-if TORCH_INFO="$("$PYTHON" -c '
-import torch
+# if TORCH_INFO="$("$PYTHON" -c '
+# import torch
 
-if not torch.cuda.is_available():
-    raise RuntimeError("CUDA is not available in PyTorch")
+# if not torch.cuda.is_available():
+#     raise RuntimeError("CUDA is not available in PyTorch")
 
-torch.zeros(1, device="cuda")
-torch.cuda.synchronize()
-print(f"PyTorch {torch.__version__}, CUDA {torch.version.cuda}, GPU {torch.cuda.get_device_name(0)}")
-' 2>&1)"
-then
-    echo "[INFO] Existing PyTorch installation is working properly."
-    echo "[INFO] $TORCH_INFO"
-else
-    echo "[WARNING] PyTorch check failed or CUDA not accessible."
-    echo "$TORCH_INFO"
+# torch.zeros(1, device="cuda")
+# torch.cuda.synchronize()
+# print(f"PyTorch {torch.__version__}, CUDA {torch.version.cuda}, GPU {torch.cuda.get_device_name(0)}")
+# ' 2>&1)"
+# then
+#     echo "[INFO] Existing PyTorch installation is working properly."
+#     echo "[INFO] $TORCH_INFO"
+# else
+#     echo "[WARNING] PyTorch check failed or CUDA not accessible."
+#     echo "$TORCH_INFO"
 
-    if [ -f "$SCRIPT_DIR/install_torch_auto.sh" ]; then
-        echo "[INFO] Running install_torch_auto.sh..."
-        chmod +x "$SCRIPT_DIR/install_torch_auto.sh"
-        "$SCRIPT_DIR/install_torch_auto.sh" || true
-    else
-        echo "[WARNING] install_torch_auto.sh not found, keeping system PyTorch."
-    fi
-fi
+#     if [ -f "$SCRIPT_DIR/install_torch_auto.sh" ]; then
+#         echo "[INFO] Running install_torch_auto.sh..."
+#         chmod +x "$SCRIPT_DIR/install_torch_auto.sh"
+#         "$SCRIPT_DIR/install_torch_auto.sh" || true
+#     else
+#         echo "[WARNING] install_torch_auto.sh not found, keeping system PyTorch."
+#     fi
+# fi
 
 # ==============================
 # STOP PYTHON PROCESSES
