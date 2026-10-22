@@ -123,6 +123,9 @@ download_model "flux2_lora005.safetensors" wget -O "$BASE/loras/flux2_lora005.sa
 #https://www.dropbox.com/scl/fi/p8710w6fydmj9023v1ui3/realistic.safetensors?rlkey=jvq2qylwuyxbjqkqnwa8ukiux&st=ykpssn2f&dl=0
 download_model "realistic.safetensors" wget -O "$BASE/loras/realistic.safetensors" "https://www.dropbox.com/scl/fi/p8710w6fydmj9023v1ui3/realistic.safetensors?rlkey=jvq2qylwuyxbjqkqnwa8ukiux&st=ykpssn2f&dl=1"
 
+#https://www.dropbox.com/scl/fi/r26bci7di5ahb0a0ozzbi/klein_slider_anatomy.safetensors?rlkey=qcbui3mu8bu3glabfglzbvc4g&st=noezq1pg&dl=0
+download_model "klein_slider_anatomy.safetensors" wget -O "$BASE/loras/klein_slider_anatomy.safetensors" "https://www.dropbox.com/scl/fi/r26bci7di5ahb0a0ozzbi/klein_slider_anatomy.safetensors?rlkey=qcbui3mu8bu3glabfglzbvc4g&st=noezq1pg&dl=1"
+
 
 # ==============================
 # DOWNLOAD CHECKPOINT
