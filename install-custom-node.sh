@@ -325,7 +325,7 @@ fi
 
 # Forward port 9999 nginx -> ComfyUI 8189.
 nohup cloudflared tunnel \
-    --url http://127.0.0.1:9999 \
+    --url http://127.0.0.1:9999 --protocol http2 \
     > "$SCRIPT_DIR/cf.log" 2>&1 &
 
 CF_PID=$!
