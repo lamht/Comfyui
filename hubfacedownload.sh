@@ -125,8 +125,12 @@ download_model "realistic.safetensors" wget -O "$BASE/loras/realistic.safetensor
 
 #https://www.dropbox.com/scl/fi/r26bci7di5ahb0a0ozzbi/klein_slider_anatomy.safetensors?rlkey=qcbui3mu8bu3glabfglzbvc4g&st=noezq1pg&dl=0
 download_model "klein_slider_anatomy.safetensors" wget -O "$BASE/loras/klein_slider_anatomy.safetensors" "https://www.dropbox.com/scl/fi/r26bci7di5ahb0a0ozzbi/klein_slider_anatomy.safetensors?rlkey=qcbui3mu8bu3glabfglzbvc4g&st=noezq1pg&dl=1"
+
 #https://www.dropbox.com/scl/fi/yua972eitb209gg6u8j1x/Flux2209B20DetaiLoRA.safetensors?rlkey=m633gvgvykhclg3igq0to3kzb&st=4uxh61jh&dl=0
 download_model "Flux2209B20DetaiLoRA.safetensors" wget -O "$BASE/loras/Flux2209B20DetaiLoRA.safetensors" "https://www.dropbox.com/scl/fi/yua972eitb209gg6u8j1x/Flux2209B20DetaiLoRA.safetensors?rlkey=m633gvgvykhclg3igq0to3kzb&st=4uxh61jh&dl=1"
+
+#https://www.dropbox.com/scl/fi/ybxpghxzdg6fhtdng2e4a/f2k_9B_lcs_consist_preview.safetensors?rlkey=mt5hf1opewv89bskw838t17i7&st=2zhlzry6&dl=0
+download_model "f2k_9B_lcs_consist_preview.safetensors" wget -O "$BASE/loras/f2k_9B_lcs_consist_preview.safetensors" "https://www.dropbox.com/scl/fi/ybxpghxzdg6fhtdng2e4a/f2k_9B_lcs_consist_preview.safetensors?rlkey=mt5hf1opewv89bskw838t17i7&st=2zhlzry6&dl=1"
 
 # ==============================
 # DOWNLOAD CHECKPOINT
