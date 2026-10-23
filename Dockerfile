@@ -79,7 +79,9 @@ RUN git clone --depth 1 \
     && git clone --depth 1 \
         https://github.com/crystian/ComfyUI-Crystools.git \
     && git clone --depth 1 \
-        https://github.com/lquesada/ComfyUI-Inpaint-CropAndStitch.git
+        https://github.com/lquesada/ComfyUI-Inpaint-CropAndStitch.git \
+    && git clone --depth 1 \
+        https://github.com/yolain/ComfyUI-Easy-Use.git
 
 # ============================================================
 # 6. Custom node requirements
