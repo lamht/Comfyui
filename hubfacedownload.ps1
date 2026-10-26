@@ -58,6 +58,8 @@ hf download dx8152/Flux2-Klein-9B-Consistency Flux2-Klein-9B-consistency-V2.safe
 # ==============================
 Write-Host "`n--- DOWNLOADING UPSCALE & FACERESTORE ---" -ForegroundColor Cyan
 hf download Kim2091/UltraSharp 4x-UltraSharp.pth --local-dir "$Base\upscale_models"
+hf download BarrenWardo/Upscalers 003_realSR_BSRGAN_DFOWMFC_s64w8_SwinIR-L_x4_GAN.pth --local-dir "$Base\upscale_models"
+hf download FacehugmanIII/4x_foolhardy_Remacri 4x_foolhardy_Remacri.pth --local-dir "$Base\upscale_models"
 curl.exe -L --create-dirs -o "$Base\facerestore_models\codeformer.pth" "https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth"
 
 # ==============================
@@ -68,12 +70,17 @@ $DropboxFiles = @(
     @{ Out = "klein_lora_face1.safetensors"; Url = "https://www.dropbox.com/scl/fi/joh1wnos385ynomj49x8e/klein_lora_face1.safetensors?rlkey=xnb5uee5sklpza56pup0jtdt2&st=7sscwh2r&dl=1" },
     @{ Out = "my_lora_klein_002.safetensors"; Url = "https://www.dropbox.com/scl/fi/prvqc30iqqgk12e8x5iyw/my_lora_klein_002.safetensors?rlkey=fq0wznag4ufbb38u8pb2zggsj&st=u3q10jwr&dl=1" },
     @{ Out = "my_lora_klein_002_v2.safetensors"; Url = "https://www.dropbox.com/scl/fi/pox80ulg1hbl8i992ssi5/my_lora_klein_002_v2.safetensors?rlkey=hvc8leq26qnuubh5dcxzvfrev&st=4ylrlte4&dl=1" },
+    @{ Out = "mylora_klein_003.safetensors"; Url = "https://www.dropbox.com/scl/fi/bk3fydes62owf9p7red7d/mylora_klein_003.safetensors?rlkey=o1og3d1iw2mh6e62wa63dp477&st=8rpznx5d&dl=1" },
+    @{ Out = "my_lora_klein_003_v2.safetensors"; Url = "https://www.dropbox.com/scl/fi/s31598pqvn6ta8n7xs5ny/mylora_klein_003_v2.safetensors?rlkey=x23rzbzlaxchbtzh6pphi1u8w&st=aexasb06&dl=1" },
     @{ Out = "my_lora_klein_004_000000300.safetensors"; Url = "https://www.dropbox.com/scl/fi/lew172dl9zaygl17wgvqv/my_lora_klein_004_000000300.safetensors?rlkey=0hbw51g0j3kjcvgjxecag4oc6&st=7zu7mowi&dl=1" },
     @{ Out = "mylora_klein_003_000001250.safetensors"; Url = "https://www.dropbox.com/scl/fi/vftvcrsdkv2w0gru8rg0e/mylora_klein_003_000001250.safetensors?rlkey=i4pv7muazvsyuu95xqucmryhi&st=zltv03vi&dl=1" },
     @{ Out = "my_lora_klein_004_v2_000001250.safetensors"; Url = "https://www.dropbox.com/scl/fi/6nvl483ugp9mwlllg2w04/my_lora_klein_004_v2_000001250.safetensors?rlkey=42r12ptupfdghehsw0t2o00xz&st=tp2ldcew&dl=1" },
     @{ Out = "my_lora_klein_004_v2_000001500.safetensors"; Url = "https://www.dropbox.com/scl/fi/0x1g6j7q3k5v8y4x9z0b/my_lora_klein_004_v2_000001500.safetensors?rlkey=42r12ptupfdghehsw0t2o00xz&st=tp2ldcew&dl=1" },
     @{ Out = "flux2_lora005.safetensors"; Url = "https://www.dropbox.com/scl/fi/yncraovi7yzrlcdparsbf/flux2_lora005.safetensors?rlkey=ad7mynauat1f51r0e0u296h2u&st=v0hovn0e&dl=1" },
-    @{ Out = "realistic.safetensors"; Url = "https://www.dropbox.com/scl/fi/p8710w6fydmj9023v1ui3/realistic.safetensors?rlkey=jvq2qylwuyxbjqkqnwa8ukiux&st=ykpssn2f&dl=1" }
+    @{ Out = "realistic.safetensors"; Url = "https://www.dropbox.com/scl/fi/p8710w6fydmj9023v1ui3/realistic.safetensors?rlkey=jvq2qylwuyxbjqkqnwa8ukiux&st=ykpssn2f&dl=1" },
+    @{ Out = "klein_slider_anatomy.safetensors"; Url = "https://www.dropbox.com/scl/fi/r26bci7di5ahb0a0ozzbi/klein_slider_anatomy.safetensors?rlkey=qcbui3mu8bu3glabfglzbvc4g&st=noezq1pg&dl=1" },
+    @{ Out = "Flux2209B20DetaiLoRA.safetensors"; Url = "https://www.dropbox.com/scl/fi/yua972eitb209gg6u8j1x/Flux2209B20DetaiLoRA.safetensors?rlkey=m633gvgvykhclg3igq0to3kzb&st=4uxh61jh&dl=1" },
+    @{ Out = "f2k_9B_lcs_consist_preview.safetensors"; Url = "https://www.dropbox.com/scl/fi/ybxpghxzdg6fhtdng2e4a/f2k_9B_lcs_consist_preview.safetensors?rlkey=mt5hf1opewv89bskw838t17i7&st=2zhlv0n0e&dl=1" }
 )
 
 foreach ($Item in $DropboxFiles) {
