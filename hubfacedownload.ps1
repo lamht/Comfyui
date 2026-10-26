@@ -54,30 +54,6 @@ hf download ali-vilab/ACE_Plus portrait/comfyui_portrait_lora64.safetensors --lo
 hf download dx8152/Flux2-Klein-9B-Consistency Flux2-Klein-9B-consistency-V2.safetensors --local-dir "$Base\loras"
 
 # ==============================
-# DOWNLOAD CHECKPOINT
-# ==============================
-Write-Host "`n--- DOWNLOADING CHECKPOINTS ---" -ForegroundColor Cyan
-hf download black-forest-labs/FLUX.2-klein-9b-fp8 flux-2-klein-9b-fp8.safetensors --local-dir "$Base\diffusion_models"
-
-# ==============================
-# DOWNLOAD CLIP
-# ==============================
-Write-Host "`n--- DOWNLOADING CLIP ---" -ForegroundColor Cyan
-hf download Comfy-Org/vae-text-encorder-for-flux-klein-9b split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors --local-dir "$Base\clip"
-if (Test-Path "$Base\clip\split_files\text_encoders\qwen_3_8b_fp8mixed.safetensors") {
-    Move-Item -Path "$Base\clip\split_files\text_encoders\qwen_3_8b_fp8mixed.safetensors" -Destination "$Base\clip\qwen_3_8b_fp8mixed.safetensors" -Force
-}
-
-# ==============================
-# DOWNLOAD VAE
-# ==============================
-Write-Host "`n--- DOWNLOADING VAE ---" -ForegroundColor Cyan
-hf download Comfy-Org/vae-text-encorder-for-flux-klein-9b split_files/vae/flux2-vae.safetensors --local-dir "$Base\vae"
-if (Test-Path "$Base\vae\split_files\vae\flux2-vae.safetensors") {
-    Move-Item -Path "$Base\vae\split_files\vae\flux2-vae.safetensors" -Destination "$Base\vae\flux2-vae.safetensors" -Force
-}
-
-# ==============================
 # DOWNLOAD UPSCALE & FACERESTORE
 # ==============================
 Write-Host "`n--- DOWNLOADING UPSCALE & FACERESTORE ---" -ForegroundColor Cyan
@@ -104,5 +80,30 @@ foreach ($Item in $DropboxFiles) {
     $OutPath = Join-Path $Base "loras\$($Item.Out)"
     curl.exe -L --create-dirs -o $OutPath $Item.Url
 }
+
+# ==============================
+# DOWNLOAD CHECKPOINT
+# ==============================
+Write-Host "`n--- DOWNLOADING CHECKPOINTS ---" -ForegroundColor Cyan
+hf download black-forest-labs/FLUX.2-klein-9b-fp8 flux-2-klein-9b-fp8.safetensors --local-dir "$Base\diffusion_models"
+
+# ==============================
+# DOWNLOAD CLIP
+# ==============================
+Write-Host "`n--- DOWNLOADING CLIP ---" -ForegroundColor Cyan
+hf download Comfy-Org/vae-text-encorder-for-flux-klein-9b split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors --local-dir "$Base\clip"
+if (Test-Path "$Base\clip\split_files\text_encoders\qwen_3_8b_fp8mixed.safetensors") {
+    Move-Item -Path "$Base\clip\split_files\text_encoders\qwen_3_8b_fp8mixed.safetensors" -Destination "$Base\clip\qwen_3_8b_fp8mixed.safetensors" -Force
+}
+
+# ==============================
+# DOWNLOAD VAE
+# ==============================
+Write-Host "`n--- DOWNLOADING VAE ---" -ForegroundColor Cyan
+hf download Comfy-Org/vae-text-encorder-for-flux-klein-9b split_files/vae/flux2-vae.safetensors --local-dir "$Base\vae"
+if (Test-Path "$Base\vae\split_files\vae\flux2-vae.safetensors") {
+    Move-Item -Path "$Base\vae\split_files\vae\flux2-vae.safetensors" -Destination "$Base\vae\flux2-vae.safetensors" -Force
+}
+
 
 Write-Host "`n✅ Download complete!" -ForegroundColor Green

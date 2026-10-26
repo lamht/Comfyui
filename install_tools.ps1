@@ -2,7 +2,7 @@
 .SYNOPSIS
     Automated script to install Python 3.10, Hugging Face CLI, Cloudflare Tunnel CLI, and Git on Windows.
 .DESCRIPTION
-    This script uses Winget and Pip to install the required tools.
+    This script uses Winget and Pip to install the required tools, including uv.
     Requires Administrator privileges (Run as Administrator).
 #>
 
@@ -19,6 +19,7 @@ Write-Host "=== STARTING AUTOMATED INSTALLATION PROCESS (4 TOOLS) ===" -Foregrou
 # Create a clean temporary directory for installers if it doesn't exist
 $DownloadDir = "$env:TEMP\ScriptDownloads"
 if (-not (Test-Path $DownloadDir)) { New-Item -ItemType Directory -Path $DownloadDir -Force | Out-Null }
+Write-Host "Download directory: $DownloadDir" -ForegroundColor Gray
 
 # Global speed optimization for Pip
 $env:PIP_DISABLE_PIP_VERSION_CHECK = "1"
@@ -27,162 +28,103 @@ $env:PIP_DEFAULT_TIMEOUT = "60"
 # ------------------------------------------------------------------------------
 # [1/4] Install Python 3.10
 # ------------------------------------------------------------------------------
-Write-Host "`n[1/4] Downloading Python 3.10 via curl..." -ForegroundColor Yellow
+Write-Host "`n[1/4] Downloading Python 3.10 installer to $DownloadDir..." -ForegroundColor Yellow
 $PythonInstaller = "$DownloadDir\python_installer.exe"
 
-# Using curl with HTTP/2 and Location redirection flags for speed
-curl -L --http2 -o $PythonInstaller "https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe"
+# Using curl.exe with Location redirection flag for speed
+curl.exe -L -o $PythonInstaller "https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe"
 
 if (Test-Path $PythonInstaller) {
-    Write-Host "Installing Python 3.10 silently..." -ForegroundColor Gray
+    Write-Host "Installing Python 3.10 silently from $PythonInstaller..." -ForegroundColor Gray
     # Run the installer silently and wait for it to finish
     Start-Process -FilePath $PythonInstaller -ArgumentList "/passive PrependPath=1 Include_test=0" -Wait
-    Write-Host "-> Python 3.10 installed successfully!" -ForegroundColor Green
+    Write-Host "-> Python 3.10 installed successfully and added to PATH." -ForegroundColor Green
 } else {
-    Write-Error "Failed to download Python 3.10 installer."
+    Write-Error "Failed to download Python 3.10 installer to $PythonInstaller."
 }
 
 # ------------------------------------------------------------------------------
 # Refresh PATH environment variable in the current session
 # ------------------------------------------------------------------------------
-Write-Host "`nUpdating session environment variables..." -ForegroundColor Gray
+Write-Host "`nRefreshing PATH from Machine and User environment settings..." -ForegroundColor Gray
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+Write-Host "PATH refreshed." -ForegroundColor Gray
 
+# ----------------------------------------------------------------------------
+# [3/5] Install Hugging Face CLI using Pip
 # ------------------------------------------------------------------------------
-# [2/4] Install Hugging Face CLI using Pip
-# ------------------------------------------------------------------------------
-Write-Host "`n[2/4] Installing Hugging Face CLI using uv/pip..." -ForegroundColor Yellow
-if (Get-Command python -ErrorAction SilentlyContinue) {
+Write-Host "`n[3/5] Installing Hugging Face CLI via pip..." -ForegroundColor Yellow
+if (Get-Command pip -ErrorAction SilentlyContinue) {
+    $PipPath = (Get-Command pip).Source
+    Write-Host "Detected pip at: $PipPath" -ForegroundColor Gray
+    # --quiet reduces console rendering overhead, which speeds up processing
     python -m pip install --upgrade pip --quiet
-    python -m pip install uv --quiet
-    if ($LASTEXITCODE -eq 0) {
-        python -m uv pip install "huggingface_hub[cli]" --quiet
-    } else {
-        python -m pip install "huggingface_hub[cli]" --quiet
-    }
-    Write-Host "-> Hugging Face CLI installed successfully!" -ForegroundColor Green
+    pip install "huggingface_hub[cli]" --quiet
+    Write-Host "-> Hugging Face CLI installed successfully." -ForegroundColor Green
 } else {
-    Write-Error "Could not find 'python' command. Please install Python and rerun the script."
+    Write-Error "Could not find 'pip' command. Please restart PowerShell and manually run: pip install huggingface_hub[cli]"
 }
 
 # ------------------------------------------------------------------------------
-# [3/4] Install Cloudflare Tunnel CLI (cloudflared)
+# [4/5] Install Cloudflare Tunnel CLI (cloudflared)
 # ------------------------------------------------------------------------------
-Write-Host "`n[3/4] Downloading Cloudflare Tunnel CLI via curl..." -ForegroundColor Yellow
+Write-Host "`n[4/5] Downloading Cloudflare Tunnel CLI to $DownloadDir..." -ForegroundColor Yellow
 $CloudflaredInstaller = "$DownloadDir\cloudflared_installer.msi"
 
-curl -L --http2 -o $CloudflaredInstaller "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.msi"
+curl.exe -L -o $CloudflaredInstaller "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.msi"
 
 if (Test-Path $CloudflaredInstaller) {
-    Write-Host "Installing Cloudflare Tunnel..." -ForegroundColor Gray
+    Write-Host "Installing Cloudflare Tunnel from $CloudflaredInstaller..." -ForegroundColor Gray
     # MSI silent install switch is /qn
     Start-Process -FilePath "msiexec.exe" -ArgumentList "/i `"$CloudflaredInstaller`" /qn" -Wait
-    Write-Host "-> Cloudflare Tunnel CLI installed successfully!" -ForegroundColor Green
+    Write-Host "-> Cloudflare Tunnel CLI installed successfully." -ForegroundColor Green
 } else {
-    Write-Error "Failed to download Cloudflare Tunnel installer."
+    Write-Error "Failed to download Cloudflare Tunnel installer to $CloudflaredInstaller."
 }
 
 # ------------------------------------------------------------------------------
-# [4/4] Install Git
+# [5/5] Install Git
 # ------------------------------------------------------------------------------
-Write-Host "`n[4/4] Downloading Git via curl..." -ForegroundColor Yellow
+Write-Host "`n[5/5] Downloading Git installer to $DownloadDir..." -ForegroundColor Yellow
 $GitInstaller = "$DownloadDir\git_installer.exe"
 
 # Direct link to the standalone 64-bit installer setup
-curl -L --http2 -o $GitInstaller "https://github.com/git-for-windows/git/releases/download/v2.45.2.windows.1/Git-2.45.2-64-bit.exe"
+curl.exe -L -o $GitInstaller "https://github.com/git-for-windows/git/releases/download/v2.45.2.windows.1/Git-2.45.2-64-bit.exe"
 
 if (Test-Path $GitInstaller) {
-    Write-Host "Installing Git silently..." -ForegroundColor Gray
+    Write-Host "Installing Git silently from $GitInstaller..." -ForegroundColor Gray
     # /VERYSILENT and /NORESTART ensures zero prompts
     Start-Process -FilePath $GitInstaller -ArgumentList "/VERYSILENT /NORESTART" -Wait
-    Write-Host "-> Git installed successfully!" -ForegroundColor Green
+    Write-Host "-> Git installed successfully." -ForegroundColor Green
 } else {
-    Write-Error "Failed to download Git installer."
+    Write-Error "Failed to download Git installer to $GitInstaller."
 }
 
 $ScriptDir = $PSScriptRoot
-$ComfyPath = Join-Path $ScriptDir "\Comfyui\ComfyUI"
-$CustomNodesPath = Join-Path $ComfyPath "custom_nodes"
 
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-git clone https://github.com/lamht/Comfyui.git
 
 $nginxVersion = "nginx-1.26.1"
-curl.exe -L -o "nginx.zip" "https://nginx.org/download/$nginxVersion.zip"
+$NginxZip = "$ScriptDir\nginx.zip"
+Write-Host "Downloading nginx $nginxVersion to $NginxZip..." -ForegroundColor Yellow
+curl.exe -L -o $NginxZip "https://nginx.org/download/$nginxVersion.zip"
 
-Expand-Archive -Path "nginx.zip" -DestinationPath "$ScriptDir\nginx" -Force
+Write-Host "Extracting nginx to $ScriptDir\nginx..." -ForegroundColor Gray
+Expand-Archive -Path $NginxZip -DestinationPath "$ScriptDir\nginx" -Force
 Move-Item -Path "$ScriptDir\nginx\$nginxVersion\*" -Destination "$ScriptDir\nginx" -Force
-Copy-Item -Path "$ScriptDir\Comfyui\nginx-win.conf" -Destination "$ScriptDir\nginx\nginx.conf" -Force
-Remove-Item "nginx.zip"
-Start-Process .\nginx.exe -WorkingDirectory "$ScriptDir\nginx" -WindowStyle Hidden
+Copy-Item -Path "$ScriptDir\nginx-win.conf" -Destination "$ScriptDir\nginx\conf\nginx.conf" -Force
+Remove-Item $NginxZip
+Write-Host "-> nginx extracted and configured at $ScriptDir\nginx" -ForegroundColor Green
 
-Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File $ScriptDir\Comfyui\hubfacedownload.ps1" -WindowStyle Hidden
-
-curl.exe -L -o "ComfyUI.7z" "https://drive.usercontent.google.com/download?id=1EqBkSGAftSMLdQRtTCnmTZpZW6PA1UTY&export=download&confirm=t&uuid=5cd64983-9cbe-4993-bdaa-5d40f6a5a11d"
-
-# This creates the folder if missing, but does nothing (and throws no error) if it already exists
-New-Item -ItemType Directory -Path "$ScriptDir\Comfyui" -Force
-
-# 1. Clean up old installation
-Remove-Item -Path "$ScriptDir\Comfyui\ComfyUI" -Recurse -Force
-
-# 2. OPTIMIZED: Extracts contents directly, bypassing the "ComfyUI_windows_portable" folder name
-Write-Host "Extracting ComfyUI..." -ForegroundColor Cyan
-tar -xvf "ComfyUI.7z" --strip-components=1 -C "$ScriptDir\Comfyui"
-
-# 3. Clean up the zip archive
-Remove-Item "ComfyUI.7z" -Force
-
-Write-Host "=== DOWNLOADING CUSTOM NODES ===" -ForegroundColor Cyan
-
-# Tạo thư mục custom_nodes nếu chưa có
-if (!(Test-Path $CustomNodesPath)) { 
-    New-Item -ItemType Directory -Path $CustomNodesPath -Force | Out-Null 
-}
-
-# 1. Tải và giải nén file custom_nodes.zip từ Dropbox
-$ZipPath = Join-Path $ComfyPath "custom_nodes.zip"
-Write-Host "-> Downloading custom_nodes.zip..." -ForegroundColor Gray
-# Keep dl=1 to force direct download
-$DropboxUrl = 'https://www.dropbox.com/scl/fi/ccabj5q3p8go0ht8fkwif/custom_nodes.zip?rlkey=6lh2ok89q00deqm0fgptdv1m7&st=8lx5fxip&dl=1'
-curl.exe -L -o "$ZipPath" $DropboxUrl
-
-Write-Host "-> Extracting custom_nodes.zip..." -ForegroundColor Gray
-# Giải nén đè (-Force tương đương với -o trong unzip)
-Expand-Archive -Path $ZipPath -DestinationPath $ComfyPath -Force
-# Xóa file zip sau khi giải nén xong cho sạch máy
-Remove-Item $ZipPath -Force
-
-Remove-Item -Path "$CustomNodesPath\rgthree-comfy" -Recurse -Force
-Remove-Item -Path "$CustomNodesPath\ComfyUI-Crystools" -Recurse -Force
-Remove-Item -Path "$CustomNodesPath\comfyui-manager" -Recurse -Force
-
-$RgthreePath = Join-Path $CustomNodesPath "rgthree-comfy"
-if (!(Test-Path $RgthreePath)) {
-    Write-Host "-> Cloning rgthree-comfy..." -ForegroundColor Gray
-    git clone https://github.com/rgthree/rgthree-comfy.git $RgthreePath
+$NginxPath = Join-Path $ScriptDir "nginx"
+if (-not ($env:Path.Split(';') -contains $NginxPath)) {
+    $env:Path = "$NginxPath;" + $env:Path
+    Write-Host "Added nginx to PATH for current session: $NginxPath" -ForegroundColor Green
 } else {
-    Write-Host "-> rgthree-comfy already exists, skipping clone." -ForegroundColor DarkYellow
+    Write-Host "nginx is already in PATH." -ForegroundColor Gray
 }
 
-$CrystoolsPath = Join-Path $CustomNodesPath "ComfyUI-Crystools"
-if (!(Test-Path $CrystoolsPath)) {
-    Write-Host "-> Cloning ComfyUI-Crystools..." -ForegroundColor Gray
-    git clone https://github.com/crystian/ComfyUI-Crystools.git $CrystoolsPath
-} else {
-    Write-Host "-> ComfyUI-Crystools already exists, skipping clone." -ForegroundColor DarkYellow
-}
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 
-$ManagerPath = Join-Path $CustomNodesPath "comfyui-manager"
-if (!(Test-Path $ManagerPath)) {
-    Write-Host "-> Cloning comfyui-manager..." -ForegroundColor Gray
-    git clone https://github.com/ltdrdata/ComfyUI-Manager $ManagerPath
-} else {
-    Write-Host "-> comfyui-manager already exists, skipping clone." -ForegroundColor DarkYellow
-}
-
-Write-Host "[+] Custom nodes setup completed!" -ForegroundColor Green
-
-
-Write-Host "`n=== ALL INSTALLATIONS COMPLETED ===" -ForegroundColor Cyan
-Write-Host "NOTE: Please CLOSE this PowerShell window and OPEN a new one for all commands (python, huggingface-cli, cloudflared, git) to work correctly." -ForegroundColor Magenta
+#install filebrowser
+iwr -useb https://raw.githubusercontent.com/filebrowser/get/master/get.ps1 | iex
