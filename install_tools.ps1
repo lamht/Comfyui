@@ -126,5 +126,24 @@ if (-not ($env:Path.Split(';') -contains $NginxPath)) {
 
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 
-#install filebrowser
+# Install File Browser
 iwr -useb https://raw.githubusercontent.com/filebrowser/get/master/get.ps1 | iex
+
+$FileBrowserDir = Join-Path $env:ProgramFiles "filebrowser"
+$FileBrowserExe = Join-Path $FileBrowserDir "filebrowser.exe"
+if (-not (Test-Path $FileBrowserExe)) {
+    throw "File Browser installation did not create $FileBrowserExe."
+}
+
+$MachinePathKey = "Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment"
+$MachinePath = (Get-ItemProperty -Path $MachinePathKey -Name PATH).Path
+$MachinePathEntries = @($MachinePath -split ";" | Where-Object { $_ })
+if ($MachinePathEntries -notcontains $FileBrowserDir) {
+    $MachinePath = (@($MachinePathEntries) + $FileBrowserDir) -join ";"
+    Set-ItemProperty -Path $MachinePathKey -Name PATH -Value $MachinePath
+}
+
+if (@($env:Path -split ";" | Where-Object { $_ }) -notcontains $FileBrowserDir) {
+    $env:Path = "$FileBrowserDir;$env:Path"
+}
+Write-Host "-> File Browser installed and added to PATH: $FileBrowserExe" -ForegroundColor Green
