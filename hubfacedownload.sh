@@ -22,12 +22,35 @@ download_model() {
   local model="$1"
   shift
 
-  printf '[INFO] [%s] Starting download: %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$model"
+  local start_time end_time elapsed status
+
+  start_time=$(date +%s)
+
+  printf '[INFO] [%s] Starting download: %s\n' \
+    "$(date '+%Y-%m-%d %H:%M:%S')" "$model"
+
   if "$@"; then
-    printf '[INFO] [%s] Finished download: %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$model"
+    end_time=$(date +%s)
+    elapsed=$((end_time - start_time))
+
+    printf '[INFO] [%s] Finished download: %s (Time: %02d:%02d:%02d)\n' \
+      "$(date '+%Y-%m-%d %H:%M:%S')" \
+      "$model" \
+      "$((elapsed / 3600))" \
+      "$(((elapsed % 3600) / 60))" \
+      "$((elapsed % 60))"
   else
-    local status=$?
-    printf '[ERROR] [%s] Download failed (exit %s): %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$status" "$model" >&2
+    status=$?
+    end_time=$(date +%s)
+    elapsed=$((end_time - start_time))
+
+    printf '[ERROR] [%s] Download failed (exit %s): %s (Elapsed: %02d:%02d:%02d)\n' \
+      "$(date '+%Y-%m-%d %H:%M:%S')" \
+      "$status" "$model" \
+      "$((elapsed / 3600))" \
+      "$(((elapsed % 3600) / 60))" \
+      "$((elapsed % 60))" >&2
+
     return "$status"
   fi
 }
