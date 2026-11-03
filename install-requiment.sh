@@ -187,9 +187,9 @@ clone_node \
 #     "https://github.com/ltdrdata/ComfyUI-Manager.git" \
 #     "$COMFY_PATH/custom_nodes/comfyui-manager"
 
-# clone_node \
-#     "https://github.com/crystian/ComfyUI-Crystools.git" \
-#     "$COMFY_PATH/custom_nodes/ComfyUI-Crystools"
+clone_node \
+    "https://github.com/crystian/ComfyUI-Crystools.git" \
+    "$COMFY_PATH/custom_nodes/ComfyUI-Crystools"
 
 clone_node \
     "https://github.com/lquesada/ComfyUI-Inpaint-CropAndStitch.git" \
