@@ -12,6 +12,11 @@ set -e
 # ==============================
 curl -LsSf https://hf.co/cli/install.sh | bash
 
+## INSTALLATION GDOWN (Colab only)
+if [ "${COLAB:-}" = "1" ] && ! command -v gdown >/dev/null 2>&1; then
+  pip install -q gdown
+fi
+
 # đảm bảo PATH có hf
 export PATH="/root/.local/bin:$PATH"
 
@@ -76,10 +81,12 @@ else
 fi
 export BASE="$COMFY_PATH/models"
 
-mkdir -p $BASE/{loras,checkpoints,clip,vae,upscale_models,facerestore_models}
+mkdir -p "$BASE/loras" "$BASE/checkpoints" "$BASE/clip" "$BASE/vae" "$BASE/upscale_models" "$BASE/facerestore_models"
 
-rm -rf /root/Comfyui/ComfyUI/models/diffusion_models/.cache/huggingface/download/*
-
+HF_CACHE_DIR="$COMFY_PATH/models/diffusion_models/.cache/huggingface/download"
+if [ -d "$HF_CACHE_DIR" ]; then
+  rm -rf "$HF_CACHE_DIR"/*
+fi
 
 # 4x UltraSharp
 download_model "Kim2091/UltraSharp (4x-UltraSharp.pth)" hf download Kim2091/UltraSharp \
@@ -166,7 +173,12 @@ download_model "f2k_9B_lcs_consist_preview.safetensors" wget -O "$BASE/loras/f2k
 
 #https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-fp8/resolve/main/flux-2-klein-9b-fp8.safetensors?download=true
 echo "Downloading flux-2-klein-9b-fp8.safetensors"
-download_model "black-forest-labs/FLUX.2-klein-9b-fp8 (flux-2-klein-9b-fp8.safetensors)" hf download black-forest-labs/FLUX.2-klein-9b-fp8 flux-2-klein-9b-fp8.safetensors --local-dir "$BASE/diffusion_models"
+if [ "${COLAB:-}" = "1" ]; then
+  echo "[INFO] Downloading flux-2-klein-9b-fp8.safetensors using gdown for Colab"
+  download_model "black-forest-labs/FLUX.2-klein-9b-fp8 (flux-2-klein-9b-fp8.safetensors)" gdown --continue "1vOVw0uXxjhpwy1Q2QyHmRsvegLMc5VTG" -O "/app/ComfyUI/models/diffusion_models/flux-2-klein-9b-fp8.safetensors"
+else
+  download_model "black-forest-labs/FLUX.2-klein-9b-fp8 (flux-2-klein-9b-fp8.safetensors)" hf download black-forest-labs/FLUX.2-klein-9b-fp8 flux-2-klein-9b-fp8.safetensors --local-dir "$BASE/diffusion_models"
+fi
 
 # ==============================
 # DOWNLOAD CLIP
