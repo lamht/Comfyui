@@ -167,6 +167,9 @@ download_model "Flux2209B20DetaiLoRA.safetensors" wget -O "$BASE/loras/Flux2209B
 #https://www.dropbox.com/scl/fi/ybxpghxzdg6fhtdng2e4a/f2k_9B_lcs_consist_preview.safetensors?rlkey=mt5hf1opewv89bskw838t17i7&st=2zhlzry6&dl=0
 download_model "f2k_9B_lcs_consist_preview.safetensors" wget -O "$BASE/loras/f2k_9B_lcs_consist_preview.safetensors" "https://www.dropbox.com/scl/fi/ybxpghxzdg6fhtdng2e4a/f2k_9B_lcs_consist_preview.safetensors?rlkey=mt5hf1opewv89bskw838t17i7&st=2zhlzry6&dl=1"
 
+#https://www.dropbox.com/scl/fi/pws3t2zqx6597fuy2darh/pusfix-klein.safetensors?rlkey=3fooobe4nawbn3ttisl50zt9n&st=z7g744vu&dl=0
+download_model "pusfix-klein.safetensors" wget -O "$BASE/loras/pusfix-klein.safetensors" "https://www.dropbox.com/scl/fi/pws3t2zqx6597fuy2darh/pusfix-klein.safetensors?rlkey=3fooobe4nawbn3ttisl50zt9n&st=z7g744vu&dl=1"
+
 # ==============================
 # DOWNLOAD CHECKPOINT
 # ==============================
