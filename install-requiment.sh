@@ -198,6 +198,10 @@ clone_node \
 clone_node \
     "https://github.com/lamht/ComfyUI-LoadNextImage.git" \
     "$COMFY_PATH/custom_nodes/ComfyUI-LoadNextImage"
+#https://github.com/mav-rik/facerestore_cf.git /app/ComfyUI/custom_nodes/facerestore_cf
+clone_node \
+    "https://github.com/mav-rik/facerestore_cf.git" \
+    "$COMFY_PATH/custom_nodes/facerestore_cf"
 
 # ==============================
 # PYTHON SELECTION
