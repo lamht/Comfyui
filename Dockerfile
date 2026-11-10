@@ -81,7 +81,9 @@ RUN git clone --depth 1 \
     && git clone --depth 1 \
         https://github.com/lquesada/ComfyUI-Inpaint-CropAndStitch.git \
     && git clone --depth 1 \
-        https://github.com/yolain/ComfyUI-Easy-Use.git
+        https://github.com/yolain/ComfyUI-Easy-Use.git \
+    && git clone --depth 1 \
+        https://github.com/mav-rik/facerestore_cf.git
 
 # ============================================================
 # 6. Custom node requirements
