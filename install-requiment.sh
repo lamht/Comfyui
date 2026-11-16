@@ -20,7 +20,7 @@ ALL_REQ="$COMFY_PATH/all.txt"
 FINAL_REQ="$COMFY_PATH/final.txt"
 LOG_FILE="$COMFY_PATH/install.log"
 
-COMFY_VERSION="0.36.0"
+COMFY_VERSION="0.45.0"
 mkdir -p /var/cache/nginx/view_cache || true
 
 echo "Using ComfyUI at: $COMFY_PATH"
