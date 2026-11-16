@@ -152,6 +152,9 @@ download_model "flux3_003_v1_00000750.safetensors" wget -O "$BASE/loras/flux3_00
 #https://www.dropbox.com/scl/fi/kyoofycjxvk7pwy9agugq/flux3_003_v1_00001000.safetensors?rlkey=04h4hxt6d6u6rk05puwdces8a&st=lzekfrb4&dl=0
 download_model "flux3_003_v1_00001000.safetensors" wget -O "$BASE/loras/flux3_003_v1_00001000.safetensors" "https://www.dropbox.com/scl/fi/kyoofycjxvk7pwy9agugq/flux3_003_v1_00001000.safetensors?rlkey=04h4hxt6d6u6rk05puwdces8a&st=lzekfrb4&dl=1"
 
+#https://www.dropbox.com/scl/fi/e3mj3r26agly8gv3i6jx8/flux3_003_v1_000001250.safetensors?rlkey=xiatw1m0wxdfnwtkhqoul211z&st=1052g158&dl=0
+download_model "flux3_003_v1_000001250.safetensors" wget -O "$BASE/loras/flux3_003_v1_000001250.safetensors" "https://www.dropbox.com/scl/fi/e3mj3r26agly8gv3i6jx8/flux3_003_v1_000001250.safetensors?rlkey=xiatw1m0wxdfnwtkhqoul211z&st=1052g158&dl=1"
+
 #https://www.dropbox.com/scl/fi/lqihsip4kj2qot1w88ykd/flux3_003_v1_00001500.safetensors?rlkey=f2c9k3thtjspiuggaqjygpqc6&st=e1mfu2zd&dl=0
 download_model "flux3_003_v1_00001500.safetensors" wget -O "$BASE/loras/flux3_003_v1_00001500.safetensors" "https://www.dropbox.com/scl/fi/lqihsip4kj2qot1w88ykd/flux3_003_v1_00001500.safetensors?rlkey=f2c9k3thtjspiuggaqjygpqc6&st=e1mfu2zd&dl=1"
 
