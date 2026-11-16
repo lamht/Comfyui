@@ -174,30 +174,84 @@ download_model "pusfix-klein.safetensors" wget -O "$BASE/loras/pusfix-klein.safe
 # DOWNLOAD CHECKPOINT
 # ==============================
 
-#https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-fp8/resolve/main/flux-2-klein-9b-fp8.safetensors?download=true
-echo "Downloading flux-2-klein-9b-fp8.safetensors"
-if [ "${COLAB:-}" = "1" ]; then
-  echo "[INFO] Downloading flux-2-klein-9b-fp8.safetensors using gdown for Colab"
-  download_model "black-forest-labs/FLUX.2-klein-9b-fp8 (flux-2-klein-9b-fp8.safetensors)" gdown --continue "1vOVw0uXxjhpwy1Q2QyHmRsvegLMc5VTG" -O "/app/ComfyUI/models/diffusion_models/flux-2-klein-9b-fp8.safetensors"
-else
-  download_model "black-forest-labs/FLUX.2-klein-9b-fp8 (flux-2-klein-9b-fp8.safetensors)" hf download black-forest-labs/FLUX.2-klein-9b-fp8 flux-2-klein-9b-fp8.safetensors --local-dir "$BASE/diffusion_models"
-fi
+# #https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-fp8/resolve/main/flux-2-klein-9b-fp8.safetensors?download=true
+# echo "Downloading flux-2-klein-9b-fp8.safetensors"
+# if [ "${COLAB:-}" = "1" ]; then
+#   echo "[INFO] Downloading flux-2-klein-9b-fp8.safetensors using gdown for Colab"
+#   download_model "black-forest-labs/FLUX.2-klein-9b-fp8 (flux-2-klein-9b-fp8.safetensors)" gdown --continue "1vOVw0uXxjhpwy1Q2QyHmRsvegLMc5VTG" -O "/app/ComfyUI/models/diffusion_models/flux-2-klein-9b-fp8.safetensors"
+# else
+#   download_model "black-forest-labs/FLUX.2-klein-9b-fp8 (flux-2-klein-9b-fp8.safetensors)" hf download black-forest-labs/FLUX.2-klein-9b-fp8 flux-2-klein-9b-fp8.safetensors --local-dir "$BASE/diffusion_models"
+# fi
 
-# ==============================
-# DOWNLOAD CLIP
-# ==============================
-echo "Downloading qwen_3_8b_fp8mixed.safetensors"
-download_model "Comfy-Org/vae-text-encorder-for-flux-klein-9b (qwen_3_8b_fp8mixed.safetensors)" hf download Comfy-Org/vae-text-encorder-for-flux-klein-9b split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors --local-dir "$BASE/clip"
-if [ -f "$BASE/clip/split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors" ]; then
-  mv "$BASE/clip/split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors" "$BASE/clip/qwen_3_8b_fp8mixed.safetensors"
-fi  
-# ==============================
-# DOWNLOAD VAE
-# ==============================
+# # ==============================
+# # DOWNLOAD CLIP
+# # ==============================
+# echo "Downloading qwen_3_8b_fp8mixed.safetensors"
+# download_model "Comfy-Org/vae-text-encorder-for-flux-klein-9b (qwen_3_8b_fp8mixed.safetensors)" hf download Comfy-Org/vae-text-encorder-for-flux-klein-9b split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors --local-dir "$BASE/clip"
+# if [ -f "$BASE/clip/split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors" ]; then
+#   mv "$BASE/clip/split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors" "$BASE/clip/qwen_3_8b_fp8mixed.safetensors"
+# fi  
+# # ==============================
+# # DOWNLOAD VAE
+# # ==============================
+# echo "Downloading flux2-vae.safetensors"
+# download_model "Comfy-Org/vae-text-encorder-for-flux-klein-9b (flux2-vae.safetensors)" hf download Comfy-Org/vae-text-encorder-for-flux-klein-9b split_files/vae/flux2-vae.safetensors --local-dir "$BASE/vae"
+# if [ -f "$BASE/vae/split_files/vae/flux2-vae.safetensors" ]; then
+#   mv "$BASE/vae/split_files/vae/flux2-vae.safetensors" "$BASE/vae/flux2-vae.safetensors"
+# fi
+
+
+# =========================================================
+# FLUX.3 IMAGE KLEIN
+# =========================================================
+
+REPO="black-forest-labs/flux-3-image-klein-comfy"
+
+# ---------------------------------------------------------
+# 1. Diffusion Model - INT8 ConvRot
+# ---------------------------------------------------------
+
+echo "Downloading flux3-image-klein-int8-convrot.safetensors"
+
+download_model "FLUX.3 Klein Diffusion INT8" \
+  hf download "$REPO" \
+  diffusion_models/flux3-image-klein-int8-convrot.safetensors \
+  --local-dir "$BASE"
+
+# ---------------------------------------------------------
+# 2. Prompt Upsampler - W4A8
+# ---------------------------------------------------------
+
+echo "Downloading qwen3.5_9b_flux3_prompt_upsampler_w4a8.safetensors"
+
+download_model "FLUX.3 Qwen3.5 9B Prompt Upsampler W4A8" \
+  hf download "$REPO" \
+  text_encoders/qwen3.5_9b_flux3_prompt_upsampler_w4a8.safetensors \
+  --local-dir "$BASE"
+
+# ---------------------------------------------------------
+# 3. CLIP - Qwen3-VL 4B INT8
+# ---------------------------------------------------------
+
+echo "Downloading qwen3vl_4b_int8_convrot.safetensors"
+
+download_model "FLUX.3 Qwen3-VL 4B INT8 ConvRot" \
+  hf download "$REPO" \
+  text_encoders/qwen3vl_4b_int8_convrot.safetensors \
+  --local-dir "$BASE"
+
+# ---------------------------------------------------------
+# 4. VAE
+# ---------------------------------------------------------
+
 echo "Downloading flux2-vae.safetensors"
-download_model "Comfy-Org/vae-text-encorder-for-flux-klein-9b (flux2-vae.safetensors)" hf download Comfy-Org/vae-text-encorder-for-flux-klein-9b split_files/vae/flux2-vae.safetensors --local-dir "$BASE/vae"
-if [ -f "$BASE/vae/split_files/vae/flux2-vae.safetensors" ]; then
-  mv "$BASE/vae/split_files/vae/flux2-vae.safetensors" "$BASE/vae/flux2-vae.safetensors"
-fi
+
+download_model "FLUX.3 Klein VAE" \
+  hf download "$REPO" \
+  vae/flux2-vae.safetensors \
+  --local-dir "$BASE"
+
+echo "[INFO] FLUX.3 Image Klein download completed"
+
 
 echo "✅ Download complete!"
