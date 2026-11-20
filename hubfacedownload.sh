@@ -188,7 +188,10 @@ download_model "f2k_9B_lcs_consist_preview.safetensors" wget -O "$BASE/loras/f2k
 #https://www.dropbox.com/scl/fi/pws3t2zqx6597fuy2darh/pusfix-klein.safetensors?rlkey=3fooobe4nawbn3ttisl50zt9n&st=z7g744vu&dl=0
 download_model "pusfix-klein.safetensors" wget -O "$BASE/loras/pusfix-klein.safetensors" "https://www.dropbox.com/scl/fi/pws3t2zqx6597fuy2darh/pusfix-klein.safetensors?rlkey=3fooobe4nawbn3ttisl50zt9n&st=z7g744vu&dl=1"
 
+#https://www.dropbox.com/scl/fi/qkdbb5nsjammi4gp0hfo1/flux-2-klein-9b_odi_V1.safetensors?rlkey=ixajje8wpyuzw1s4kxvjurslc&st=vm58nmrr&dl=0
+download_model "flux-2-klein-9b_odi_V1.safetensors" wget -O "$BASE/loras/flux-2-klein-9b_odi_V1.safetensors" "https://www.dropbox.com/scl/fi/qkdbb5nsjammi4gp0hfo1/flux-2-klein-9b_odi_V1.safetensors?rlkey=ixajje8wpyuzw1s4kxvjurslc&st=vm58nmrr&dl=1"
 
+#https://huggingface.co/datasets/hardlyworking/Vagina-Vision-Image-Folder-Captions-Included/tree/main
 # =========================================================
 # DETECT FLUX VERSION
 # =========================================================
