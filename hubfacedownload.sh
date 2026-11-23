@@ -197,6 +197,9 @@ download_model "flux2_klein_skin_4.safetensors" wget -O "$BASE/loras/flux2_klein
 #https://www.dropbox.com/scl/fi/nkedj1v2fgkmh4hkjuwbh/Flux3_skin_texture-step-5000.safetensors?rlkey=8trmfrkpmi76wekaw7n4xxjhp&st=ccksiwsk&dl=0
 download_model "Flux3_skin_texture-step-5000.safetensors" wget -O "$BASE/loras/Flux3_skin_texture-step-5000.safetensors" "https://www.dropbox.com/scl/fi/nkedj1v2fgkmh4hkjuwbh/Flux3_skin_texture-step-5000.safetensors?rlkey=8trmfrkpmi76wekaw7n4xxjhp&st=ccksiwsk&dl=1"
 
+#https://www.dropbox.com/scl/fi/2nesydurq0udcnhkxl1fa/Klein9b_ultra_real_v5_pro.safetensors?rlkey=n8xdd6b5oy1u5t901eo9xmhcz&st=w5ffllmh&dl=0
+download_model "Klein9b_ultra_real_v5_pro.safetensors" wget -O "$BASE/loras/Klein9b_ultra_real_v5_pro.safetensors" "https://www.dropbox.com/scl/fi/2nesydurq0udcnhkxl1fa/Klein9b_ultra_real_v5_pro.safetensors?rlkey=n8xdd6b5oy1u5t901eo9xmhcz&st=w5ffllmh&dl=1"
+
 #https://huggingface.co/datasets/hardlyworking/Vagina-Vision-Image-Folder-Captions-Included/tree/main
 # =========================================================
 # DETECT FLUX VERSION
