@@ -102,6 +102,11 @@ download_model "krea2_odi_krea2_V1.safetensors" wget -O "$BASE/loras/krea2_odi_k
 #https://www.dropbox.com/scl/fi/oyjl1f6axg6lu3nyr04ie/krea2_identity_edit_v2_r128.safetensors?rlkey=93yw5anjjgly0piyb0t6bmzua&st=d0ies4it&dl=0
 download_model "krea2_identity_edit_v2_r128.safetensors" wget -O "$BASE/loras/krea2_identity_edit_v2_r128.safetensors" "https://www.dropbox.com/scl/fi/oyjl1f6axg6lu3nyr04ie/krea2_identity_edit_v2_r128.safetensors?rlkey=93yw5anjjgly0piyb0t6bmzua&st=d0ies4it&dl=1"
 
+#https://www.dropbox.com/scl/fi/95dse9le52idxbtwsq93d/krea2_pretty_odi_v2.safetensors?rlkey=p2ucb0sx65j9p009aihj3g369&st=g3ollcap&dl=0
+download_model "krea2_pretty_odi_v2.safetensors" wget -O "$BASE/loras/krea2_pretty_odi_v2.safetensors" "https://www.dropbox.com/scl/fi/95dse9le52idxbtwsq93d/krea2_pretty_odi_v2.safetensors?rlkey=p2ucb0sx65j9p009aihj3g369&st=g3ollcap&dl=1"
+
+#https://www.dropbox.com/scl/fi/4tbklc8dhbijs0pz14a9b/Krea2_spread_odi.safetensors?rlkey=uresac2gggw89ycyd5hbxo04o&st=uo69zn9i&dl=0
+download_model "Krea2_spread_odi.safetensors" wget -O "$BASE/loras/Krea2_spread_odi.safetensors" "https://www.dropbox.com/scl/fi/4tbklc8dhbijs0pz14a9b/Krea2_spread_odi.safetensors?rlkey=uresac2gggw89ycyd5hbxo04o&st=uo69zn9i&dl=1"
 
 
 # =========================================================
