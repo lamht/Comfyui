@@ -202,6 +202,10 @@ clone_node \
 clone_node \
     "https://github.com/mav-rik/facerestore_cf.git" \
     "$COMFY_PATH/custom_nodes/facerestore_cf"
+#https://github.com/lbouaraba/comfyui-krea2edit
+clone_node \
+    "https://github.com/lbouaraba/comfyui-krea2edit.git" \
+    "$COMFY_PATH/custom_nodes/comfyui-krea2edit"
 
 # ==============================
 # PYTHON SELECTION
