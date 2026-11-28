@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+set -o pipefail
 
 # ==============================
 # SET TOKEN
@@ -10,15 +11,17 @@ set -e
 # ==============================
 # INSTALL HF CLI (hf)
 # ==============================
-curl -LsSf https://hf.co/cli/install.sh | bash
+# đảm bảo PATH có hf
+export PATH="/root/.local/bin:$PATH"
+
+if ! command -v hf >/dev/null 2>&1; then
+  curl -LsSf https://hf.co/cli/install.sh | bash
+fi
 
 ## INSTALLATION GDOWN (Colab only)
 if [ "${COLAB:-}" = "1" ] && ! command -v gdown >/dev/null 2>&1; then
   pip install -q gdown
 fi
-
-# đảm bảo PATH có hf
-export PATH="/root/.local/bin:$PATH"
 
 # tăng tốc download
 export HF_XET_HIGH_PERFORMANCE=1
@@ -27,7 +30,49 @@ download_model() {
   local model="$1"
   shift
 
-  local start_time end_time elapsed status
+  local start_time end_time elapsed status target=""
+
+  if [ "$1" = "hf" ] && [ "$2" = "download" ]; then
+    local local_dir="" requested_file="" expect_local_dir=0 argument_index=0
+    for arg in "$@"; do
+      argument_index=$((argument_index + 1))
+      if [ "$argument_index" -le 3 ]; then
+        continue
+      fi
+      if [ "$expect_local_dir" = "1" ]; then
+        local_dir="$arg"
+        expect_local_dir=0
+      elif [ "$arg" = "--local-dir" ]; then
+        expect_local_dir=1
+      elif [[ "$arg" != -* ]] && [ -z "$requested_file" ]; then
+        requested_file="$arg"
+      fi
+    done
+    if [ -n "$local_dir" ] && [ -n "$requested_file" ]; then
+      target="$local_dir/$requested_file"
+      if [[ "$requested_file" == split_files/* ]]; then
+        local relocated_target="$local_dir/${requested_file##*/}"
+        if [ -s "$relocated_target" ]; then
+          target="$relocated_target"
+        fi
+      fi
+    fi
+  else
+    local previous=""
+    for arg in "$@"; do
+      if [ "$previous" = "-O" ]; then
+        target="$arg"
+        break
+      fi
+      previous="$arg"
+    done
+  fi
+
+  if [ -n "$target" ] && [ -s "$target" ]; then
+    printf '[INFO] [%s] Skipping existing file: %s\n' \
+      "$(date '+%Y-%m-%d %H:%M:%S')" "$target"
+    return 0
+  fi
 
   start_time=$(date +%s)
 
@@ -82,11 +127,6 @@ fi
 export BASE="$COMFY_PATH/models"
 
 mkdir -p "$BASE/loras" "$BASE/checkpoints" "$BASE/clip" "$BASE/vae" "$BASE/upscale_models" "$BASE/facerestore_models"
-
-HF_CACHE_DIR="$COMFY_PATH/models/diffusion_models/.cache/huggingface/download"
-if [ -d "$HF_CACHE_DIR" ]; then
-  rm -rf "$HF_CACHE_DIR"/*
-fi
 
 # 4x UltraSharp
 download_model "Kim2091/UltraSharp (4x-UltraSharp.pth)" hf download Kim2091/UltraSharp \
